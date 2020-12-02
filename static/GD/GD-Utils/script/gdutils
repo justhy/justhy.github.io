@@ -1,0 +1,149 @@
+#! /bin/bash
+
+NAME="GD-Utils"
+GDUTILS_DIR="/root/gd-utils"
+GDUTILS_EMPTY_DB_URL="https://github.com/Godcic/script_center/raw/main/GDCopy/GD-Utils/gdutils-empty-db.sqlite"
+GDUTILS_DB_NAME="gdurl.sqlite"
+
+CADDY_CONF_FILE="/usr/local/caddy/Caddyfile"
+Info_font_prefix="\033[32m" && Error_font_prefix="\033[31m" && Info_background_prefix="\033[42;37m" && Error_background_prefix="\033[41;37m" && Font_suffix="\033[0m"
+RETVAL=0
+cron_task(){
+	echo "0 0 * * 7 /root/sh/gdutils clear" >> /var/spool/cron/crontabs/root
+	echo -e "${Error_font_prefix}[信息]${Font_suffix} 选择VIM编辑后输入:wq保存 ${Font}"
+	crontab -e
+}
+
+do_start(){
+	cd $GDUTILS_DIR
+	pm2 start server.js --node-args="--max-old-space-size=4096"
+}
+do_stop(){
+	pm2 stop server
+}
+do_status(){
+	pm2 l
+}
+do_restart(){
+	pm2 reload server
+	do_status
+}
+do_clear(){
+	cd $GDUTILS_DIR
+	do_stop
+	pm2 flush
+	node clear-db.js	
+	cd /
+	for i in `find . -name "*.log"`; do cat /dev/null >$i; done
+	do_start
+}
+do_initdb(){
+	cd $GDUTILS_DIR
+	do_stop
+	pm2 flush
+	
+	rm -rf gdurl.sql*
+	wget --no-check-certificate -q $GDUTILS_EMPTY_DB_URL -O $GDUTILS_DB_NAME
+	
+	cd /
+	for i in `find . -name "*.log"`; do cat /dev/null >$i; done
+	do_start
+}
+do_update(){
+	cd $GDUTILS_DIR
+	git pull
+	do_clear
+}
+do_backup(){
+	read -p "请输入Bot名称：" botName
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $NAME 正在备份..."
+	if  [ ! -n "$botName" ] ;then
+		botName="未命名"
+	fi
+	
+	date=$(date "+%Y%m%d%H%M%S")
+	suffix="-${botName}-${date}"
+	workDir="$(cd `dirname $0`; pwd)/GDUtilsTemp/"
+	software=fclone
+	remote=gd
+	remoteFolder="GDCopy/GD-Utils/"
+	
+	fileName="GDUtils${suffix}.zip"
+	file="${workDir}${fileName}"
+	
+	mkdir -p "${workDir}"
+	cp -r -p $GDUTILS_DIR/sa $workDir
+	cp -p $GDUTILS_DIR/config.js ${workDir}config.js
+	cd $workDir
+	zip -q -r $fileName ./
+	$software move $file $remote:$remoteFolder
+	rm -rf $workDir
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $NAME 备份完成：$remote:$remoteFolder$fileName "
+}
+do_restore(){ 
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} 将会安装Nodejs 12 LTS"
+	read -p "请输入备份包链接（.zip）：" restorePath
+	read -p "是否安装 Caddy (y/n，defatult：y)：" caddyEnable
+	[[ -z ${caddyEnable} ]] && unyn="y"
+	if [ $caddyEnable == y ]; then
+			read -p "请输入 TG Bot 域名：" botDomain
+			read -p "请输入 TG BotToken：" botTonken
+	fi
+	if  [[ $restorePath =~ \.zip$ ]];then
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} $NAME 正在还原..."
+		cd ~
+		apt update
+		apt install -y zip unzip curl git
+		curl -sL https://deb.nodesource.com/setup_lts.x | bash -
+		apt update
+		apt install -y nodejs
+		git clone https://github.com/iwestlin/gd-utils && cd gd-utils
+		npm install --unsafe-perm=true --allow-root
+		npm install -g pm2
+
+		wget --no-check-certificate -c -q $restorePath -O $NAME.zip
+		unzip -o -q $NAME.zip && rm -rf $NAME.zip
+		
+		# Caddy
+		if [ $caddyEnable == y ]; then
+			bash <(wget --no-check-certificate -qO- https://github.com/Godcic/script_center/raw/main/Caddy/sh/caddy_1.0) install
+			
+			echo "http://${botDomain} {
+        gzip
+        timeouts none
+        proxy / http://::1:23333 {
+                header_upstream Host {host}
+                header_upstream X-Real-IP {remote}
+                header_upstream X-Forwarded-For {remote}
+                header_upstream X-Forwarded-Proto {scheme}
+        }
+}" >> ${CADDY_CONF_FILE}
+		
+			cron_task
+			/etc/init.d/caddy restart
+			
+			pm2 start server.js --node-args="--max-old-space-size=4096"
+			curl '${botDomain}/api/gdurl/count?fid=124pjM5LggSuwI1n40bcD5tQ13wS0M6wg'
+			curl -F "url=${botDomain}/api/gdurl/tgbot" 'https://api.telegram.org/bot${botTonken}/setWebhook'
+			pm2 startup
+			pm2 save
+			
+		fi
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} $NAME 还原完成。"
+	else
+		echo -e "${Error_font_prefix}[错误]${Font_suffix}请检查输入 !"
+	fi
+}
+
+case "$1" in
+	start|stop|restart|status|update|clear|initdb|backup|restore)
+	do_$1
+	;;
+	*)
+	echo "使用方法: $0 { start | stop | restart | status | update | clear | backup | restore}"
+	RETVAL=1
+	;;
+esac
+exit $RETVAL
+
+

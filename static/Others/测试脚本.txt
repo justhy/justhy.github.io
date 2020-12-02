@@ -1,0 +1,8 @@
+wget -qO- sb.oldking.net | bash
+wget -qO- https://git.io/Jvh0J | bash
+
+# ÍøËÙ²âÊÔ½Å±¾
+bash <(curl -Lso- https://git.io/superspeed)
+
+wget -N --no-check-certificate https://raw.githubusercontent.com/veip007/hj/master/hj.sh && chmod +x hj.sh && bash hj.sh
+bash <(wget --no-check-certificate -qO- https://github.com/Aniverse/A/raw/i/a)

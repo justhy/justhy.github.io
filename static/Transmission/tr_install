@@ -1,0 +1,192 @@
+#! /bin/bash
+
+SOFT_NAME="Transmission"
+TR_DIR="/root/.config/transmission"
+TR_DL_DIR="/root/Download"
+
+Info_font_prefix="\033[32m" && Error_font_prefix="\033[31m" && Info_background_prefix="\033[42;37m" && Error_background_prefix="\033[41;37m" && Font_suffix="\033[0m"
+source /etc/os-release &>/dev/null
+check_system(){
+	KernelBit="$(getconf LONG_BIT)"
+    if [[ "${ID}" == "debian" && ${VERSION_ID} -ge 8 ]];then
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} 当前系统为 Debian ${VERSION_ID} "
+    elif [[ "${ID}" == "ubuntu" && `echo "${VERSION_ID}" | cut -d '.' -f1` -ge 16 ]];then
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} 当前系统为 Ubuntu ${VERSION_ID} "
+    else
+		echo -e "${Error_font_prefix}[错误]${Font_suffix} 当前系统为不在支持的系统列表内，安装中断"
+        exit 1
+    fi
+}
+
+init_install(){	
+	read -p "是否安装 Fclone 进行数据上传(y/n，defatult：y)：" fcloned
+	if  [ ! -n "$fcloned" ]; then
+		fcloned="y"
+	fi
+	if  [ $fcloned == y ]; then
+		read -p "是否安装还原Fclone配置(y/n，defatult：y)：" restoreFclone
+		if  [[ $restoreFclone != n ]]; then
+			restoreFclone=y
+		fi
+		if [[ $restoreFclone == y ]]; then
+			read -p "请输入备份包链接（.zip）：" restorePath
+			if [[ $restorePath != *.zip ]]; then
+				echo -e "${Error_font_prefix}[错误]${Font_suffix} 备份包地址输入错误！"
+				exit 1
+			fi
+		fi
+	fi
+}
+
+install_fclone(){
+	if  [ $fcloned == y ] ;then
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} fclone 开始安装..."
+		bash <(wget -qO- https://git.io/JJYE0)
+		if [ $restoreFclone == y ]; then
+			workDir="/root/fcloneTemp"
+			mkdir "${workDir}"
+			wget --no-check-certificate -c -q $restorePath -O configs.zip
+			unzip -q -o configs.zip && rm -rf configs.zip
+			mkdir -p "$RCLONEDIR"
+			cp -r -p ${workDir}/. $RCLONEDIR/.
+			rm -rf ${workDir}
+		fi
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} fclone 安装结束。"
+	fi
+}
+
+install_common_lib(){
+	apt-get -yqq update; apt-get -yqq upgrade; \
+	apt-get -y install unzip build-essential libssl-dev automake \
+	autoconf libtool pkg-config intltool \
+	libcurl4-openssl-dev libglib2.0-dev \
+	libevent-dev libminiupnpc-dev libgtk-3-dev libappindicator3-dev
+}
+
+install_tr(){
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} 将会编译安装 $SOFT_NAME 2.9.4 "
+	install_common_lib
+	cd ~
+	wget -c -q https://github.com/blackyau/Transmission_SkipHashChek/archive/2.94_mod.zip
+	unzip -q 2.94_mod.zip && rm -rf 2.94_mod.zip && cd Transmission_SkipHashChek-2.94_mod
+	chmod +x autogen.sh
+	./autogen.sh
+	make -j$(nproc) && make install
+	if [ ! -d "$TR_DIR" ]; then 
+		mkdir -p "$TR_DIR"
+	fi
+	if [ ! -d "$TR_DL_DIR" ]; then 
+		mkdir -p "$TR_DL_DIR"
+	fi
+	cd "$TR_DIR"
+	wget -N --no-check-certificate "https://github.com/Godcic/script_center/raw/main/Transmission/copy2gd.sh"
+	wget -N --no-check-certificate "https://github.com/Godcic/script_center/raw/main/Transmission/move2gd.sh"
+	chmod +x ./*.sh
+	cd ~ && rm -rf Transmission_SkipHashChek-2.94_mod
+	echo "[Unit]
+Description=Transmission BitTorrent Daemon
+After=network.target
+ 
+[Service]
+User=root
+ExecStart=/usr/local/bin/transmission-daemon -f --log-error -g /usr/local/transmission
+Restart=always
+RestartSec=3
+ 
+[Install]
+WantedBy=multi-user.target
+" > /etc/systemd/system/transmission.service
+	systemctl daemon-reload
+	systemctl enable transmission.service
+	systemctl start transmission.service
+	
+	cd ~ && wget https://github.com/ronggang/transmission-web-control/raw/master/release/install-tr-control-cn.sh && chmod +x install-tr-control-cn.sh
+	bash install-tr-control-cn.sh
+	rm -f install-tr-control-cn.sh
+	
+	systemctl stop transmission.service
+	echo '{
+    "alt-speed-down": 50, 
+    "alt-speed-enabled": false, 
+    "alt-speed-time-begin": 540, 
+    "alt-speed-time-day": 127, 
+    "alt-speed-time-enabled": false, 
+    "alt-speed-time-end": 1020, 
+    "alt-speed-up": 50, 
+    "bind-address-ipv4": "0.0.0.0", 
+    "bind-address-ipv6": "::", 
+    "blocklist-enabled": false, 
+    "blocklist-url": "http://www.example.com/blocklist", 
+    "cache-size-mb": 4, 
+    "dht-enabled": false, 
+    "download-dir": "$TR_DL_DIR", 
+    "download-limit": 100, 
+    "download-limit-enabled": 0, 
+    "download-queue-enabled": true, 
+    "download-queue-size": 30, 
+    "encryption": 1, 
+    "idle-seeding-limit": 30, 
+    "idle-seeding-limit-enabled": false, 
+    "incomplete-dir": "$TR_DL_DIR", 
+    "incomplete-dir-enabled": false, 
+    "lpd-enabled": false, 
+    "max-peers-global": 999999999, 
+    "message-level": 1, 
+    "peer-congestion-algorithm": "", 
+    "peer-id-ttl-hours": 6, 
+    "peer-limit-global": 999999999, 
+    "peer-limit-per-torrent": 666666, 
+    "peer-port": 51413, 
+    "peer-port-random-high": 65535, 
+    "peer-port-random-low": 49152, 
+    "peer-port-random-on-start": false, 
+    "peer-socket-tos": "default", 
+    "pex-enabled": true, 
+    "port-forwarding-enabled": false, 
+    "preallocation": 1, 
+    "prefetch-enabled": 1, 
+    "queue-stalled-enabled": true, 
+    "queue-stalled-minutes": 30, 
+    "ratio-limit": 2, 
+    "ratio-limit-enabled": false, 
+    "rename-partial-files": false, 
+    "rpc-authentication-required": true, 
+    "rpc-bind-address": "0.0.0.0", 
+    "rpc-enabled": true, 
+    "rpc-host-whitelist": "", 
+    "rpc-host-whitelist-enabled": true, 
+    "rpc-password": "pt4396", 
+    "rpc-port": 9091, 
+    "rpc-url": "/transmission/", 
+    "rpc-username": "pt4396", 
+    "rpc-whitelist": "127.0.0.1", 
+    "rpc-whitelist-enabled": false, 
+    "scrape-paused-torrents-enabled": true, 
+    "script-torrent-done-enabled": true, 
+    "script-torrent-done-filename": "$TR_DIR/move2gd.sh", 
+    "seed-queue-enabled": false, 
+    "seed-queue-size": 10, 
+    "speed-limit-down": 100, 
+    "speed-limit-down-enabled": false, 
+    "speed-limit-up": 100, 
+    "speed-limit-up-enabled": false, 
+    "start-added-torrents": true, 
+    "trash-original-torrent-files": false, 
+    "umask": 18, 
+    "upload-limit": 3, 
+    "upload-limit-enabled": 0, 
+    "upload-slots-per-torrent": 14, 
+    "utp-enabled": true
+}' > /usr/local/transmission/settings.json
+	systemctl start transmission.service
+	
+}
+
+main(){
+	check_system
+	init_install
+	install_tr
+	install_fclone
+}
+
+main

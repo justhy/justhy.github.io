@@ -1,0 +1,125 @@
+#! /bin/bash
+
+SOFT_NAME="Aria2"
+
+ARIA2_DIR="/root/.config/aria2"
+ARIA_DL_DIR="/root/.config/aria2/Download"
+
+RCLONEDIR="/root/.config/rclone"
+
+Info_font_prefix="\033[32m" && Error_font_prefix="\033[31m" && Info_background_prefix="\033[42;37m" && Error_background_prefix="\033[41;37m" && Font_suffix="\033[0m"
+
+bit=`uname -m`
+source /etc/os-release &>/dev/null
+
+check_system(){
+	KernelBit="$(getconf LONG_BIT)"
+    if [[ "${ID}" == "debian" && ${VERSION_ID} -ge 8 ]];then
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} 当前系统为 Debian ${VERSION_ID} "
+    elif [[ "${ID}" == "ubuntu" && `echo "${VERSION_ID}" | cut -d '.' -f1` -ge 16 ]];then
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} 当前系统为 Ubuntu ${VERSION_ID} "
+    else
+		echo -e "${Error_font_prefix}[错误]${Font_suffix} 当前系统为不在支持的系统列表内，安装中断"
+        exit 1
+    fi
+	#if [ ${bit} != x86_64 ]; then
+	#	echo -e "${Error_font_prefix}[错误]${Font_suffix} 只支持x86_64"
+    #    exit 1
+	#fi
+}
+init_install(){
+	read -p "是否安装 Fclone 进行数据上传(y/n，defatult：y)：" fcloned
+	if  [ ! -n "$fcloned" ]; then
+		fcloned="y"
+	fi
+	if  [ $fcloned == y ]; then
+		read -p "是否安装还原Fclone配置(y/n，defatult：y)：" restoreFclone
+		if  [[ $restoreFclone != n ]]; then
+			restoreFclone=y
+		fi
+		if [[ $restoreFclone == y ]]; then
+			read -p "请输入备份包链接（.zip）：" restorePath
+			if [[ $restorePath != *.zip ]]; then
+				echo -e "${Error_font_prefix}[错误]${Font_suffix} 备份包地址输入错误！"
+				exit 1
+			fi
+		fi
+	fi
+}
+
+install_fclone(){
+	if  [ $fcloned == y ] ;then
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} fclone 开始安装..."
+		bash <(wget -qO- https://git.io/JJYE0)
+	
+		if [ $restoreFclone == y ]; then
+			workDir="/root/fcloneTemp"
+			mkdir "$workDir"
+			cd $workDir
+			wget --no-check-certificate -c -q $restorePath -O configs.zip
+			unzip -q -o configs.zip && rm -rf configs.zip
+			mkdir -p "$RCLONEDIR"
+			cp -r -p $workDir/. $RCLONEDIR/.
+			rm -rf $workDir
+		fi
+	
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} fclone 安装结束。"
+	fi
+}
+
+install_aria2(){
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $SOFT_NAME 开始安装..."
+	apt-get -y install cron zip unzip sudo wget curl ca-certificates
+	cd ~
+	if [ ! -d "$ARIA2_DIR" ]; then 
+		mkdir -p "$ARIA2_DIR"
+	fi
+	if [ ! -d "$ARIA_DL_DIR" ]; then 
+		mkdir -p "$ARIA_DL_DIR"
+	fi
+	
+	if [[ ${bit} == "i386" || ${bit} == "i686" ]]; then
+		wget --no-check-certificate -c "https://github.com/Godcic/script_center/raw/main/Aria2/aria2-static-builds/aria2-i386.tar.gz"
+	elif [[ ${bit} == "x86_64" ]]; then
+		wget --no-check-certificate -c "https://github.com/Godcic/script_center/raw/main/Aria2/aria2-static-builds/aria2-x86_64.tar.gz"
+	elif [[ ${bit} == "armv7l" ]]; then
+		wget --no-check-certificate -c "https://github.com/Godcic/script_center/raw/main/Aria2/aria2-static-builds/aria2-arm.tar.gz"
+	elif [[ ${bit} == "arm64" ]]; then
+		wget --no-check-certificate -c "https://github.com/Godcic/script_center/raw/main/Aria2/aria2-static-builds/aria2-arm64.tar.gz"
+	else
+		echo -e "${Error_font_prefix}[错误]${Font_suffix}  不支持 ${bit} !" && exit 1
+	fi
+	
+	tar zxvf aria2-*.tar.gz && rm -f aria2-*.tar.gz && mv -f aria2c /usr/bin/
+	cd $ARIA2_DIR
+	wget --no-check-certificate "https://github.com/Godcic/script_center/raw/main/Aria2/config/aria2.conf"
+	wget --no-check-certificate "https://github.com/Godcic/script_center/raw/main/Aria2/config/aria2.session"
+	wget --no-check-certificate "https://github.com/Godcic/script_center/raw/main/Aria2/config/autoupload.sh"
+	wget --no-check-certificate "https://github.com/Godcic/script_center/raw/main/Aria2/config/trackers-list-aria2.sh"
+	wget --no-check-certificate "https://github.com/Godcic/script_center/raw/main/Aria2/config/aria2"
+	chmod +x ${ARIA2_DIR}/trackers-list-aria2.sh
+	chmod +x ${ARIA2_DIR}/autoupload.sh
+	chmod 777 ${ARIA2_DIR}/aria2.session
+	chmod +x ${ARIA2_DIR}/aria2
+	mv -f ${ARIA2_DIR}/aria2 /etc/init.d
+	update-rc.d -f aria2 defaults
+	
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $SOFT_NAME 安装结束。"
+}
+
+startup(){
+	echo "*/5 * * * * /usr/sbin/service aria2 start" >> /var/spool/cron/crontabs/root
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} 选择VIM编辑后输入:wq保存 ${Font}"
+	crontab -e
+	bash /etc/init.d/caddy restart
+	bash ${ARIA2_DIR}/trackers-list-aria2.sh
+}
+main(){
+	check_system
+	init_install
+	install_aria2
+	install_fclone
+	startup
+}
+
+main

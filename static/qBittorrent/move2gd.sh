@@ -1,0 +1,14 @@
+#! /bin/bash
+
+file=$1
+
+software=fclone
+transfers=4
+cloudName=moe
+cloudFolder=
+
+if [ -d "$file" ];then
+	$software move --transfers=$transfers "$1" "$cloudName:$cloudFolder/$2/" --delete-empty-src-dirs
+elif [ -f "$file" ]; then
+	$software move "$1" "$cloudName:$cloudFolder/"
+fi

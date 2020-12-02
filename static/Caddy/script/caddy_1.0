@@ -1,0 +1,118 @@
+#! /bin/bash
+
+SOFT_NAME="Caddy"
+
+CADDY_DIR="/usr/local/caddy/"
+CADDY_FILE="/usr/local/caddy/caddy"
+CADDY_CONF_FILE="/usr/local/caddy/Caddyfile"
+
+Info_font_prefix="\033[32m" && Error_font_prefix="\033[31m" && Info_background_prefix="\033[42;37m" && Error_background_prefix="\033[41;37m" && Font_suffix="\033[0m"
+
+bit=`uname -m`
+source /etc/os-release &>/dev/null
+RETVAL=0
+check_system(){
+	KernelBit="$(getconf LONG_BIT)"
+    if [[ "${ID}" == "debian" && ${VERSION_ID} -ge 8 ]];then
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} 当前系统为 Debian ${VERSION_ID} "
+    elif [[ "${ID}" == "ubuntu" && `echo "${VERSION_ID}" | cut -d '.' -f1` -ge 16 ]];then
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} 当前系统为 Ubuntu ${VERSION_ID} "
+    else
+		echo -e "${Error_font_prefix}[错误]${Font_suffix} 当前系统为不在支持的系统列表内，安装中断"
+        exit 1
+    fi
+	#if [ ${bit} != x86_64 ]; then
+	#	echo -e "${Error_font_prefix}[错误]${Font_suffix} 只支持x86_64"
+    #    exit 1
+	#fi
+}
+
+cron_task(){
+	echo "*/5 * * * * /etc/init.d/caddy start" >> /var/spool/cron/crontabs/root
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} 选择VIM编辑后输入 :wq 保存 ${Font}"
+	crontab -e
+	#sleep 2
+	#bash /etc/init.d/caddy restart
+}
+do_install(){
+	check_system
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} ${SOFT_NAME} 开始安装..."
+	cd ~
+	if [[ -e ${CADDY_FILE} ]]; then
+		echo && echo -e "${Error_font_prefix}[警告]${Font_suffix}  检测到 ${SOFT_NAME} 已安装，是否继续安装(覆盖更新)？[y/N]"
+		stty erase '^H' && read -p "(default: n):" yn
+		[[ -z ${yn} ]] && yn="n"
+		if [[ ${yn} == [Nn] ]]; then
+			echo && echo "已取消..." && exit 1
+		fi
+	fi
+	
+	if [[ ${bit} == "i386" || ${bit} == "i686" ]]; then
+		wget --no-check-certificate -O "caddy" "https://github.com/Godcic/script_center/raw/main/Caddy/caddy_linux_386"
+	elif [[ ${bit} == "x86_64" ]]; then
+		wget --no-check-certificate -O "caddy" "https://github.com/Godcic/script_center/raw/main/Caddy/caddy_linux_amd64"
+	elif [[ ${bit} == "armv7l" ]]; then
+		wget --no-check-certificate -O "caddy" "https://github.com/Godcic/script_center/raw/main/caddy_linux_arm7"
+	elif [[ ${bit} == "arm64" ]]; then
+		wget --no-check-certificate -O "caddy" "https://github.com/Godcic/script_center/raw/main/Caddy/caddy_linux_arm64"
+	else
+		echo -e "${Error_font_prefix}[错误]${Font_suffix}  不支持 ${bit} !" && exit 1
+	fi
+	
+	[[ ! -e "caddy" ]] && echo -e "${Error_font_prefix}[信息]${Font_suffix} ${SOFT_NAME} 下载失败 !" && exit 1
+	
+	chmod +x caddy
+	mkdir -p "${CADDY_DIR}"
+	yes | cp ./caddy $CADDY_DIR
+	rm -rf caddy
+	[[ ! -e ${CADDY_FILE} ]] && echo -e "${Error_font_prefix}[信息]${Font_suffix} ${SOFT_NAME} 解压失败或压缩文件错误 !" && exit 1
+	
+	if ! wget --no-check-certificate "https://github.com/Godcic/script_center/raw/main/Caddy/script/caddy_debian" -O /etc/init.d/caddy; then
+		echo -e "${Error_font_prefix}[错误]${Font_suffix} Caddy服务 管理脚本下载失败 !" && exit 1
+	fi
+	chmod +x /etc/init.d/caddy
+	update-rc.d -f caddy defaults
+	cron_task
+	echo && echo -e " ${SOFT_NAME} 配置文件：${caddy_conf_file}
+ ${SOFT_NAME} 日志文件：/tmp/caddy.log
+ 使用说明：service caddy start | stop | restart | status
+ 或者使用：/etc/init.d/caddy start | stop | restart | status
+ ${Info_font_prefix}[信息]${Font_suffix} ${SOFT_NAME} 安装完成！" && echo
+}
+check_installed_status(){
+	[[ ! -e ${CADDY_FILE} ]] && echo -e "${Error_font_prefix}[错误]${Font_suffix} Caddy 没有安装，请检查 !" && exit 1
+}
+do_uninstall(){
+	check_installed_status
+	echo && echo "确定要卸载 Caddy ? [y/n]"
+	read -e -p "(默认: n):" unyn
+	[[ -z ${unyn} ]] && unyn="n"
+	if [[ ${unyn} == [Yy] ]]; then
+		PID=`ps -ef |grep "caddy" |grep -v "grep" |grep -v "init.d" |grep -v "service" |grep -v "caddy_install" |awk '{print $2}'`
+		[[ ! -z ${PID} ]] && kill -9 ${PID}
+		if [[ ${release} = "centos" ]]; then
+			chkconfig --del caddy
+		else
+			update-rc.d -f caddy remove
+		fi
+		[[ -s /tmp/caddy.log ]] && rm -rf /tmp/caddy.log
+		rm -rf ${CADDY_FILE}
+		rm -rf ${CADDY_CONF_FILE}
+		rm -rf /etc/init.d/caddy
+		[[ ! -e ${CADDY_FILE} ]] && echo && echo -e "${Info_font_prefix}[信息]${Font_suffix} Caddy 卸载完成 !" && echo && exit 1
+		echo && echo -e "${Error_font_prefix}[错误]${Font_suffix} Caddy 卸载失败 !" && echo
+	else
+		echo && echo "卸载已取消..." && echo
+	fi
+}
+
+case "$1" in
+	install|uninstall)
+	do_$1
+	;;
+	*)
+	echo "使用方法: $0 { install | uninstall}"
+	RETVAL=1
+	;;
+esac
+exit $RETVAL

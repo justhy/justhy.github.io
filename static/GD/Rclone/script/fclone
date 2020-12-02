@@ -1,0 +1,65 @@
+#! /bin/bash
+
+NAME="Rclone-configs"
+WORKDIR="/root/rcloneTemp"
+RCLONEDIR="/root/.config/rclone"
+Info_font_prefix="\033[32m" && Error_font_prefix="\033[31m" && Info_background_prefix="\033[42;37m" && Error_background_prefix="\033[41;37m" && Font_suffix="\033[0m"
+RETVAL=0
+
+do_backup(){
+	read -p "是否备份SA目录(y/n)：" backupSA
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $NAME 正在备份..."
+	
+	mkdir "$WORKDIR"
+	cd $WORKDIR
+	
+	date=$(date "+%Y%m%d%H%M%S")
+	software=fclone
+	remote=gd
+	remoteFolder="GDCopy/Rclone/"
+	
+	fileName="Rclone-${date}.zip"
+	file="${workDir}${fileName}"
+	
+	
+	if  [ $backupSA == y ] ;then
+		cp -r -p $RCLONEDIR/SA $WORKDIR/SA
+	fi
+	
+	cp -p $RCLONEDIR/rclone.conf $WORKDIR/rclone.conf
+	
+	zip -q -r $fileName ./
+	
+	$software move $file $remote:$remoteFolder
+	rm -rf $WORKDIR
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} 备份完成：$remote:$remoteFolder$fileName "
+}
+do_restore(){
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} 将会安装fclone"
+	read -p "请输入备份包链接（.zip）：" restorePath
+	if  [[ $restorePath =~ \.zip$ ]];then
+		cd ~
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} $NAME 正在还原..."
+		bash <(wget -qO- https://git.io/JJYE0)
+		mkdir "$WORKDIR"
+		cd $WORKDIR
+		wget --no-check-certificate -c -q $restorePath -O $NAME.zip
+		unzip -q -o $NAME.zip && rm -rf $NAME.zip
+		mkdir -p "$RCLONEDIR"
+		cp -r -p $WORKDIR/. $RCLONEDIR/.
+		rm -rf $WORKDIR
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} $NAME 还原完成。"
+	else
+		echo -e "${Error_font_prefix}[错误]${Font_suffix}请检查输入 !"
+	fi
+}
+case "$1" in
+	backup|restore)
+	do_$1
+	;;
+	*)
+	echo "使用方法: $0 { backup | restore}"
+	RETVAL=1
+	;;
+esac
+exit $RETVAL
