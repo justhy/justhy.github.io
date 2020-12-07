@@ -5,7 +5,7 @@ Info_font_prefix="\033[32m" && Error_font_prefix="\033[31m" && Info_background_p
 set_dns(){
 	read -p "是否设置Google DNS？（y/n, default: y）：" GoogleDNS
 	if  [ ! -n "$GoogleDNS" ]; then
-		ipv6only="y"
+		GoogleDNS="y"
 	fi
 	if [ $GoogleDNS == y ]; then
 		apt install -y resolvconf
