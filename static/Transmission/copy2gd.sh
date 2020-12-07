@@ -8,7 +8,7 @@ cloudName=moe
 cloudFolder=
 
 if [ -d "$file" ];then
-	$software copy --transfers=$transfers "$file" "$cloudName:$folder/$TR_TORRENT_NAME"
+	$software copy --transfers=$transfers "$file" "$cloudName:$cloudFolder/$TR_TORRENT_NAME"
 elif [ -f "$file" ]; then
-	$software copy "$file" "$cloudName:$folder/"
+	$software copy "$file" "$cloudName:$cloudFolder/"
 fi

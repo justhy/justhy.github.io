@@ -8,7 +8,7 @@ cloudName=moe
 cloudFolder=
 
 if [ -d "$file" ];then
-	$software move --transfers=$transfers "$file" "$cloudName:$folder/$TR_TORRENT_NAME" --delete-empty-src-dirs
+	$software move --transfers=$transfers "$file" "$cloudName:$cloudFolder/$TR_TORRENT_NAME" --delete-empty-src-dirs
 elif [ -f "$file" ]; then
-	$software move "$file" "$cloudName:$folder/"
+	$software move "$file" "$cloudName:$cloudFolder/"
 fi
