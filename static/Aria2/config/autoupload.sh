@@ -4,9 +4,8 @@ path=$3
 downloadpath='/root/.config/aria2/Download'
 
 copySoftware=fclone
-transfers=4
 cloudName=moe
-cloudFolder=
+cloudFolder=.aria2
 
 if [ $2 -eq 0 ]
         then
@@ -22,7 +21,7 @@ if [ "$path" = "$downloadpath" ] && [ $2 -eq 1 ]
 elif [ "$path" = "$downloadpath" ]
     then
 	while [[ "`ls -A "$filepath/"`" != "" ]]; do
-    ${copySoftware} move --transfers=$transfers "$filepath"/ ${cloudName}:${cloudFolder}/"${filepath##*/}"/ --delete-empty-src-dirs
+    ${copySoftware} move "$filepath"/ ${cloudName}:${cloudFolder}/"${filepath##*/}"/ --delete-empty-src-dirs
 	done
 	rm -rf "$filepath/"
     exit 0

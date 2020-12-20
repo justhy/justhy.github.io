@@ -2,10 +2,11 @@
 
 file="$TR_TORRENT_DIR/$TR_TORRENT_NAME"
 
+cloudName=moe
+cloudFolder=.transmission
+
 software=fclone
 transfers=4
-cloudName=moe
-cloudFolder=
 
 if [ -d "$file" ];then
 	$software move --transfers=$transfers "$file" "$cloudName:$cloudFolder/$TR_TORRENT_NAME" --delete-empty-src-dirs
