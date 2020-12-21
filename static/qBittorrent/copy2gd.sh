@@ -6,10 +6,10 @@ cloudName=moe
 cloudFolder=.qBittorrent
 
 software=fclone
-transfers=4
+transfers=16
 
 if [ -d "${file}" ];then
-	${software} copy --transfers=$transfers "$1" ${cloudName}:${folder}/"$2" 
+	${software} copy --transfers=$transfers "$1" ${cloudName}:${cloudFolder}/"$2" 
 elif [ -f "${file}" ]; then
-	${software} copy "$1" ${cloudName}:${folder}/ 
+	${software} copy "$1" ${cloudName}:${cloudFolder}/ 
 fi
