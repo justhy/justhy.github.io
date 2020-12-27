@@ -5,7 +5,7 @@ SOFT_NAME="Aria2"
 ARIA2_DIR="/root/.config/aria2"
 ARIA_DL_DIR="/root/.config/aria2/Download"
 ARIA_NG_DIR="/root/.config/aria2/AriaNg"
-ARIA_NG_VER=1.1.6
+ARIA_NG_VER=1.1.7
 
 RCLONEDIR="/root/.config/rclone"
 
