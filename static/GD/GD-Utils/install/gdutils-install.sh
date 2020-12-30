@@ -1,7 +1,8 @@
 #! /bin/bash
 
 THIS_NAME="GD-Utils"
-GDUTILS_DIR="/root/gd-utils"
+PARENT_DIR="/root/.config"
+GDUTILS_DIR="$PARENT_DIR/gd-utils"
 
 CADDY_CONF_FILE="/usr/local/caddy/Caddyfile"
 
@@ -44,6 +45,7 @@ install() {
 	fi
 	
 	rm -rf "$GDUTILS_DIR"
+	cd "$PARENT_DIR"
 	git clone https://github.com/iwestlin/gd-utils
 	cd "$GDUTILS_DIR"
 	npm install --unsafe-perm=true --allow-root

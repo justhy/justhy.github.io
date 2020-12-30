@@ -32,7 +32,7 @@ check_system(){
 	#fi
 }
 init_install(){
-	stty erase '^H' && read -p "请输入你的 Aria2Ng 域名信息(eg：aria2.umoe.vip)：" domain
+	stty erase '^H' && read -p "请输入你的 Aria2Ng 域名信息(eg：pan.baidu.com)：" domain
 	read -p "是否安装 Fclone 进行数据上传(y/n，defatult：y)：" fcloned
 	if  [ ! -n "$fcloned" ]; then
 		fcloned="y"
@@ -52,7 +52,7 @@ init_install(){
 	fi
 }
 init_install2(){
-	stty erase '^H' && read -p "请输入你的 Aria2Ng 域名信息(eg：aria2.umoe.vip)：" domain
+	stty erase '^H' && read -p "请输入你的 Aria2Ng 域名信息(eg：pan.baidu.com)：" domain
 	#stty erase '^H' && read -p "请输入你的Aria2密钥:" pass
 	domain_ip=`ping ${domain} -c 1 | sed '1{s/[^(]*(//;s/).*//;q}'`
     local_ip=`ifconfig -a|grep inet|grep -v 127.0.0.1|grep -v inet6 | awk '{print $2}' | tr -d "addr:"`
