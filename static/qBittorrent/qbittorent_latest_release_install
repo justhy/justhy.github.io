@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+SOFT_NAME="qBittorrent"
+NAME_BIN="qbittorrent-nox"
+QBITTORENT_DIR="/root/.config/qBittorrent"
+QBITTORENT_DL_DIR="/root/Download"
+RCLONEDIR="/root/.config/rclone"
+
+Info_font_prefix="\033[32m" && Error_font_prefix="\033[31m" && Info_background_prefix="\033[42;37m" && Error_background_prefix="\033[41;37m" && Font_suffix="\033[0m"
+
+check_system(){
+	if ! command -v systemctl >/dev/null 2>&1; then
+    echo "${Error_font_prefix}[ERROR]${Font_suffix} > Sorry but this scripts is only for Linux with systemd, eg: Ubuntu 16.04+/Centos 7+ ..."
+    exit 1
+	fi
+
+	if [[ $(id -u) -ne 0 ]]; then
+		echo "${Error_font_prefix}[ERROR]${Font_suffix} This script must be run as root" 
+		exit 1
+	fi
+
+	OSARCH=$(uname -m)
+	case $OSARCH in 
+		x86_64)
+			BINTAG=amd64
+			;;
+		i*86)
+			BINTAG=386
+			;;
+		arm64)
+			BINTAG=arm64
+			;;
+		arm*)
+			BINTAG=arm
+			;;
+		*)
+			echo "unsupported OSARCH: $OSARCH"
+			exit 1
+			;;
+	esac
+}
+
+check_running(){
+	PID=`ps -ef |grep "${NAME_BIN}" |grep -v "grep" |grep -v "init.d" |grep -v "service" |awk '{print $2}'`
+	if [[ ! -z ${PID} ]]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+stop_qb(){
+	check_running
+	if [[ $? -eq 0 ]]; then
+		kill -9 ${PID}
+		sleep 3
+	fi
+}
+
+install_qb (){
+	stop_qb
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $SOFT_NAME 开始安装..."
+	wget -qO- https://api.github.com/repos/userdocs/qbittorrent-nox-static/releases/latest \
+	| grep browser_download_url | grep "$BINTAG-glibc-qbittorrent-nox" | cut -d '"' -f 4 \
+	| wget --no-verbose -i- -qO "$NAME_BIN"
+	chmod +x "$NAME_BIN"
+	mv -f "$NAME_BIN" /usr/local/bin/
+	
+	mkdir -p "$QBITTORENT_DIR"
+	mkdir -p "$QBITTORENT_DL_DIR"
+	cd "$QBITTORENT_DIR"
+	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/copy2gd.sh"
+	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/move2gd.sh"
+	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/allupload.sh"
+	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/upload_files.sh"
+	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/dlgd.sh"
+	chmod +x ./*.sh
+	cd ~
+	rm -rf libtorrent-*
+	rm -rf qBittorrent-*
+	echo "[Unit]
+Description=qBittorrent Daemon Service
+After=network.target
+ 
+[Service]
+Type=forking
+ExecStart=/usr/local/bin/qbittorrent-nox -d
+ExecStop=/usr/bin/killall -w -s 9 /usr/local/bin/qbittorrent-nox
+TimeoutSec=300
+Restart=always
+RestartSec=10
+ 
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/qbittorrent.service
+	
+	systemctl daemon-reload
+	systemctl enable qbittorrent.service
+	systemctl start qbittorrent.service
+	
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $SOFT_NAME 安装结束
+默认的WebUI：http://服务器IP:8080/
+默认用户名：admin
+默认密码：adminadmin"
+	
+}
+
+main(){
+	check_system
+	install_qb
+}
+main

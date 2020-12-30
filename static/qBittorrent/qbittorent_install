@@ -1,7 +1,7 @@
 #! /bin/bash
 
-SOFT_NAME="qBittorent"
-QBITTORENT_DIR="/root/.config/qBittroent"
+SOFT_NAME="qBittorrent"
+QBITTORENT_DIR="/root/.config/qBittorrent"
 QBITTORENT_DL_DIR="/root/Download"
 RCLONEDIR="/root/.config/rclone"
 
@@ -20,7 +20,7 @@ check_system(){
 }
 
 init_install(){
-	stty erase '^H' && read -p "请输入想安装的 $SOFT_NAME 版本(defatult：4.1.5)：" qb_ver 
+	stty erase '^H' && read -p "请输入想安装的 $SOFT_NAME 版本(defatult：4.1.5，4.2.0以下(不包括4.2.0))：" qb_ver 
 	
 	if  [ ! -n "$qb_ver" ]; then
 		qb_ver="4.1.5"
@@ -35,8 +35,8 @@ init_install(){
 	fi
 	qb_ver_code=${qb_ver_sub//.}
 	
-	if [[ ${VERSION_ID} -eq 8 && ${qb_ver_code} -gt 419 ]]; then
-		echo -e "${Error_font_prefix}[错误]${Font_suffix} 当前系统 Debian${VERSION_ID} 最高只能支持 ${SOFT_NAME} 4.1.9.1"
+	if [ ${qb_ver_code} -gt 419 ]; then
+		echo -e "${Error_font_prefix}[错误]${Font_suffix} 最高只支持编译安装 ${SOFT_NAME} 4.1.9.1"
 		exit 1
 	fi
 	
@@ -93,31 +93,14 @@ install_qb(){
 		sed -i '$d' /etc/apt/sources.list
 		apt-get update
 	elif [ ${VERSION_ID} -gt 8 ]; then
-		if [ ${VERSION_ID} -eq 9 ]; then
-			install_common_lib
-			if [ ${qb_ver_code} -gt 419 ]; then
-				echo "deb http://deb.debian.org/debian buster main" >> /etc/apt/sources.list
-				apt-get update
-				apt-get install -y qtbase5-dev qttools5-dev-tools
-				sed -i '$d' /etc/apt/sources.list
-				apt-get update
-			else
-				apt-get install -y qtbase5-dev qttools5-dev-tools
-			fi
-		else
-			install_common_lib
-			apt-get install -y qtbase5-dev qttools5-dev-tools
-		fi
+		install_common_lib
+		apt-get install -y qtbase5-dev qttools5-dev-tools
 	else
 		echo -e "${Error_font_prefix}[错误]${Font_suffix} 当前系统为不在支持的系统列表内，安装中断"
         exit 1
 	fi
 	
-	if [ ${qb_ver_code} -lt 420 ]; then
-		libtorrent_link="https://github.com/arvidn/libtorrent/releases/download/libtorrent-1_1_13/libtorrent-rasterbar-1.1.13.tar.gz"
-	else
-		libtorrent_link="https://github.com/arvidn/libtorrent/releases/download/libtorrent-1_1_14/libtorrent-rasterbar-1.1.14.tar.gz"
-	fi
+	libtorrent_link="https://github.com/arvidn/libtorrent/releases/download/libtorrent-1_1_13/libtorrent-rasterbar-1.1.13.tar.gz"
 	wget --no-check-certificate -c -q ${libtorrent_link}
 	tar zxvf libtorrent-*.tar.gz && rm -rf libtorrent-*.tar.gz && cd libtorrent-*
 	./configure --disable-debug --enable-encryption --with-libgeoip=system CXXFLAGS=-std=c++11
@@ -132,11 +115,11 @@ install_qb(){
 	mkdir -p "$QBITTORENT_DIR"
 	mkdir -p "$QBITTORENT_DL_DIR"
 	cd "$QBITTORENT_DIR"
-	wget -N --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/copy2gd.sh"
-	wget -N --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/move2gd.sh"
-	wget -N --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/allupload.sh"
-	wget -N --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/upload_files.sh"
-	wget -N --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/dlgd.sh"
+	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/copy2gd.sh"
+	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/move2gd.sh"
+	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/allupload.sh"
+	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/upload_files.sh"
+	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/dlgd.sh"
 	chmod +x ./*.sh
 	cd ~
 	rm -rf libtorrent-*

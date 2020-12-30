@@ -152,7 +152,7 @@ install_aria2(){
 	update-rc.d -f aria2 defaults
 	
 	cd ${ARIA_NG_DIR}
-	wget --no-check-certificate -c https://github.com/Godcic/script_center/raw/main/Aria2/AriaNg/AriaNg-${ARIA_NG_VER}.zip
+	wget --no-check-certificate -qc https://github.com/mayswind/AriaNg/releases/download/$ARIA_NG_VER/AriaNg-$ARIA_NG_VER.zip
 	unzip -q AriaNg-*.zip && rm -rf AriaNg-*.zip
 	
 	echo -e "${Info_font_prefix}[信息]${Font_suffix} $SOFT_NAME 安装结束。"
