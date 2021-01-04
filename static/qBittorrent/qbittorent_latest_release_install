@@ -56,12 +56,10 @@ stop_qb(){
 		kill -9 ${PID}
 		sleep 3
 	fi
-	echo "stop_qb"
 }
 
 install_qb (){
 	stop_qb
-	echo "install_qb"
 	echo -e "${Info_font_prefix}[信息]${Font_suffix} $SOFT_NAME 开始安装..."
 	wget -qO- https://api.github.com/repos/userdocs/qbittorrent-nox-static/releases/latest \
 	| grep browser_download_url | grep "$BINTAG-glibc-qbittorrent-nox" | cut -d '"' -f 4 \
