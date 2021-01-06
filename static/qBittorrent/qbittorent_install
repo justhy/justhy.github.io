@@ -2,6 +2,7 @@
 
 SOFT_NAME="qBittorrent"
 QBITTORENT_DIR="/root/.config/qBittorrent"
+QBITTORENT_SCRIPT_DIR="$QBITTORENT_DIR/script"
 QBITTORENT_DL_DIR="/root/Download"
 RCLONEDIR="/root/.config/rclone"
 
@@ -113,8 +114,9 @@ install_qb(){
 	./configure --disable-gui --disable-debug
 	make -j$(nproc) && make install
 	mkdir -p "$QBITTORENT_DIR"
+	mkdir -p "$QBITTORENT_SCRIPT_DIR"
 	mkdir -p "$QBITTORENT_DL_DIR"
-	cd "$QBITTORENT_DIR"
+	cd "$QBITTORENT_SCRIPT_DIR"
 	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/copy2gd.sh"
 	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/move2gd.sh"
 	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/allupload.sh"
