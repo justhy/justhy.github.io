@@ -5,7 +5,7 @@ MOVED=false
 
 SOFTWARE=fclone
 CLOUD_NAME=moe
-CLOUD_DIR=
+CLOUD_DIR=.qBittorrent
 
 WROK_DIR=$(cd $(dirname $0); pwd)
 UPLOAD_NAMES="files_names.conf"

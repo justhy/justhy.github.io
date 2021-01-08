@@ -7,7 +7,7 @@ MOVED=true
 SOFTWARE=fclone
 transfers=4
 CLOUD_NAME=moe
-CLOUD_DIR=
+CLOUD_DIR=.qBittorrent
 
 QB_DL_DIR="/root/Download"
 FILE="$QB_DL_DIR/$FILE_NAME"
