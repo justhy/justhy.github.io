@@ -121,7 +121,7 @@ install_qb(){
 	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/move2gd.sh"
 	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/allupload.sh"
 	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/upload_files.sh"
-	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/dlgd.sh"
+	touch upload_files_names.conf
 	chmod +x ./*.sh
 	cd ~
 	rm -rf libtorrent-*
