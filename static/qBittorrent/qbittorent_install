@@ -2,7 +2,9 @@
 
 SOFT_NAME="qBittorrent"
 QBITTORENT_DIR="/root/.config/qBittorrent"
+QBITTORENT_CONF="$QBITTORENT_DIR/qBittorrent.conf"
 QBITTORENT_SCRIPT_DIR="$QBITTORENT_DIR/script"
+WEBUI_PROT=2020
 QBITTORENT_DL_DIR="/root/Download"
 RCLONEDIR="/root/.config/rclone"
 
@@ -116,6 +118,13 @@ install_qb(){
 	mkdir -p "$QBITTORENT_DIR"
 	mkdir -p "$QBITTORENT_SCRIPT_DIR"
 	mkdir -p "$QBITTORENT_DL_DIR"
+	echo "[LegalNotice]
+Accepted=true
+
+[Preferences]
+WebUI\Port=$WEBUI_PROT
+General\Locale=zh
+" > "$QBITTORENT_CONF"
 	cd "$QBITTORENT_SCRIPT_DIR"
 	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/copy2gd.sh"
 	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/move2gd.sh"
@@ -146,7 +155,7 @@ WantedBy=multi-user.target" > /etc/systemd/system/qbittorrent.service
 	systemctl start qbittorrent.service
 	
 	echo -e "${Info_font_prefix}[信息]${Font_suffix} $SOFT_NAME 安装结束。
-默认的WebUI：http://服务器IP:8080/
+默认的WebUI：http://服务器IP:$WEBUI_PROT/
 默认用户名：admin
 默认密码：adminadmin
 请在控制台运行 qbittorrent-nox 并同意协议。"
