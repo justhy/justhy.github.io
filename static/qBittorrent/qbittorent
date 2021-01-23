@@ -2,12 +2,14 @@
 
 SOFT_NAME="qBittorrent"
 NAME_BIN="qbittorrent-nox"
+BIN_DIR="/usr/local/bin"
+BIN_PATH="$BIN_DIR/$NAME_BIN"
 QBITTORENT_DIR="/root/.config/qBittorrent"
 QBITTORENT_CONF="$QBITTORENT_DIR/qBittorrent.conf"
 WEBUI_PROT=2020
 QBITTORENT_SCRIPT_DIR="$QBITTORENT_DIR/script"
 QBITTORENT_DL_DIR="/root/Download"
-RCLONEDIR="/root/.config/rclone"
+QB_SERVERICE="/etc/systemd/system/qbittorrent.service"
 
 Info_font_prefix="\033[32m" && Error_font_prefix="\033[31m" && Info_background_prefix="\033[42;37m" && Error_background_prefix="\033[41;37m" && Font_suffix="\033[0m"
 
@@ -53,22 +55,23 @@ check_running(){
 	echo "check_running"
 }
 
-stop_qb(){
-	check_running
-	if [[ $? -eq 0 ]]; then
-		kill -9 ${PID}
-		sleep 3
-	fi
+get_latest_release(){
+	wget -qO- https://api.github.com/repos/userdocs/qbittorrent-nox-static/releases/latest \
+	| grep browser_download_url | grep "$BINTAG-musl-qbittorrent-nox" | cut -d '"' -f 4 \
+	| wget --no-verbose -i- -qO "$NAME_BIN"
+	rm -f "$BIN_PATH"
+	chmod +x "$NAME_BIN"
+	mv -f "$NAME_BIN" "$BIN_DIR"
 }
 
-install_qb (){
-	stop_qb
+do_install(){
+	check_system
+	if [[ "$BINTAG" != "amd64" ]]; then
+		echo -e "${Error_font_prefix}[错误]${Font_suffix} 只支持 amd64 。"
+		exit 1
+	fi
 	echo -e "${Info_font_prefix}[信息]${Font_suffix} $SOFT_NAME 开始安装..."
-	wget -qO- https://api.github.com/repos/userdocs/qbittorrent-nox-static/releases/latest \
-	| grep browser_download_url | grep "$BINTAG-glibc-qbittorrent-nox" | cut -d '"' -f 4 \
-	| wget --no-verbose -i- -qO "$NAME_BIN"
-	chmod +x "$NAME_BIN"
-	mv -f "$NAME_BIN" /usr/local/bin/
+	get_latest_release
 	
 	mkdir -p "$QBITTORENT_DIR"
 	mkdir -p "$QBITTORENT_SCRIPT_DIR"
@@ -88,22 +91,20 @@ General\Locale=zh
 	touch upload_files_names.conf
 	chmod +x ./*.sh
 	cd ~
-	rm -rf libtorrent-*
-	rm -rf qBittorrent-*
 	echo "[Unit]
 Description=qBittorrent Daemon Service
 After=network.target
  
 [Service]
 Type=forking
-ExecStart=/usr/local/bin/qbittorrent-nox -d
-ExecStop=/usr/bin/killall -w -s 9 /usr/local/bin/qbittorrent-nox
+ExecStart=$BIN_PATH -d
+ExecStop=/usr/bin/killall -w -s 9 $BIN_PATH
 TimeoutSec=300
 Restart=always
 RestartSec=10
  
 [Install]
-WantedBy=multi-user.target" > /etc/systemd/system/qbittorrent.service
+WantedBy=multi-user.target" > "$QB_SERVERICE"
 	
 	systemctl daemon-reload
 	systemctl enable qbittorrent.service
@@ -113,11 +114,32 @@ WantedBy=multi-user.target" > /etc/systemd/system/qbittorrent.service
 默认的WebUI：http://服务器IP:$WEBUI_PROT/
 默认用户名：admin
 默认密码：adminadmin"
-	
 }
 
-main(){
-	check_system
-	install_qb
+do_uninstall(){
+	systemctl stop qbittorrent.service
+	rm -rf "$QBITTORENT_DIR"
+	rm -f "$QB_SERVERICE"
+	rm -f "$BIN_PATH"
+	systemctl daemon-reload
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $SOFT_NAME 卸载完成。"
 }
-main
+
+do_update(){
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $SOFT_NAME 开始更新..."
+	systemctl stop qbittorrent.service
+	get_latest_release
+	systemctl start qbittorrent.service
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $SOFT_NAME 更新完成。"
+}
+
+case "$1" in
+	install|uninstall|update)
+	do_$1
+	;;
+	*)
+	echo "使用方法: $0 { install | uninstall | update }"
+	RETVAL=1
+	;;
+esac
+exit $RETVAL
