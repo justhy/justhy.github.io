@@ -11,9 +11,11 @@ transfers=16
 cloudName=moe
 cloudFolder=.qBittorrent
 
-if [[ "$SHTZWZM" =~ "$category" ]];then
-	cloudName=shtzwzm
-	cloudFolder=RSSHub
+if [[ -n "$category" ]]; then 
+	if [[ "$SHTZWZM" =~ "$category" ]];then
+		cloudName=shtzwzm
+		cloudFolder=RSSHub
+	fi
 fi
 
 if [ -d "${file}" ];then
