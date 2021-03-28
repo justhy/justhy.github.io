@@ -5,7 +5,7 @@ nameserver 2a03:7900:2:0:31:3:104:161" > /etc/resolv.conf
 
 apt update
 
-wget https://github.com/AlexanderOMara/wireguard-go-builds/releases/download/0.0.20181222/wireguard-go-linux-amd64.tar.xz && tar xvJf wireguard-go-*.tar.xz && rm -f wireguard-go-*.tar.xz && chmod +x ./wireguard-go && mv ./wireguard-go /usr/bin/
+wget https://github.com/AlexanderOMara/wireguard-go-builds/releases/download/0.0.20181222/wireguard-go-linux-amd64.tar.xz && tar xvJf wireguard-go-*.tar.xz && rm -f wireguard-go-*.tar.xz && chmod +x ./wireguard-go && mv -f ./wireguard-go /usr/bin/
 
 mkdir -p /etc/wireguard
 wget "https://msource.ml/static/warp/wgcf-profile.conf" -O /etc/wireguard/wgcf-profile.conf
