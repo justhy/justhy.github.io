@@ -44,6 +44,6 @@ WantedBy=multi-user.target" > /lib/systemd/system/wg-quick@.service
 
 systemctl enable wg-quick@wgcf-profile
 systemctl start wg-quick@wgcf-profile
-sleep 3
-systemctl status wg-quick@wgcf-profile
+#sleep 3
+#systemctl status wg-quick@wgcf-profile
 
