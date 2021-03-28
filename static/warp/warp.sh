@@ -10,6 +10,10 @@ wget https://github.com/AlexanderOMara/wireguard-go-builds/releases/download/0.0
 mkdir -p /etc/wireguard
 wget "https://msource.ml/static/warp/wgcf-profile.conf" -O /etc/wireguard/wgcf-profile.conf
 
+echo "nameserver 2606:4700:4700::1111
+nameserver 2001:4860:4860::8888" > /etc/resolv.conf
+apt update
+
 apt-get -y install git wireguard-tools net-tools openresolv
 export WG_I_PREFER_BUGGY_USERSPACE_TO_POLISHED_KMOD=1
 wg-quick up wgcf-profile
