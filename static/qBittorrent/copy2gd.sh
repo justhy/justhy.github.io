@@ -24,6 +24,8 @@ elif [ -f "${file}" ]; then
 	${software} copy "$1" ${cloudName}:${cloudFolder}/ 
 fi
 
-if [[ "$SHTZWZM" =~ "$category" ]];then
-	fclone --max-size 300M delete $cloudName:RSSHub
+if [[ -n "$category" ]]; then 
+	if [[ "$SHTZWZM" =~ "$category" ]];then
+		fclone --max-size 300M delete $cloudName:RSSHub
+	fi
 fi
