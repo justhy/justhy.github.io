@@ -110,7 +110,7 @@ main(){
 	set_dns
 	set_file_max
 	set_timezone
-	set_utf
+	#set_utf
 	install_def
 	set_finished
 }
