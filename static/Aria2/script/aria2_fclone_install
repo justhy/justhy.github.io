@@ -3,7 +3,8 @@
 SOFT_NAME="Aria2"
 
 ARIA2_DIR="/root/.config/aria2"
-ARIA_DL_DIR="/root/.config/aria2/Download"
+ARIA_CONFIG_DIR="$ARIA2_DIR/config"
+ARIA_DL_DIR="$ARIA2_DIR/Download"
 
 RCLONEDIR="/root/.config/rclone"
 
@@ -71,8 +72,8 @@ install_aria2(){
 	echo -e "${Info_font_prefix}[信息]${Font_suffix} $SOFT_NAME 开始安装..."
 	apt-get -y install cron zip unzip sudo wget curl ca-certificates
 	cd ~
-	if [ ! -d "$ARIA2_DIR" ]; then 
-		mkdir -p "$ARIA2_DIR"
+	if [ ! -d "$ARIA_CONFIG_DIR" ]; then 
+		mkdir -p "$ARIA_CONFIG_DIR"
 	fi
 	if [ ! -d "$ARIA_DL_DIR" ]; then 
 		mkdir -p "$ARIA_DL_DIR"
@@ -91,17 +92,17 @@ install_aria2(){
 	fi
 	
 	tar zxvf aria2-*.tar.gz && rm -f aria2-*.tar.gz && mv -f aria2c /usr/bin/
-	cd $ARIA2_DIR
+	cd $ARIA_CONFIG_DIR
 	wget --no-check-certificate "https://msource.ml/static/Aria2/config/aria2.conf"
 	wget --no-check-certificate "https://msource.ml/static/Aria2/config/aria2.session"
 	wget --no-check-certificate "https://msource.ml/static/Aria2/config/autoupload.sh"
 	wget --no-check-certificate "https://msource.ml/static/Aria2/config/trackers-list-aria2.sh"
 	wget --no-check-certificate "https://msource.ml/static/Aria2/config/aria2"
-	chmod +x ${ARIA2_DIR}/trackers-list-aria2.sh
-	chmod +x ${ARIA2_DIR}/autoupload.sh
-	chmod 777 ${ARIA2_DIR}/aria2.session
-	chmod +x ${ARIA2_DIR}/aria2
-	mv -f ${ARIA2_DIR}/aria2 /etc/init.d
+	chmod +x ${ARIA_CONFIG_DIR}/trackers-list-aria2.sh
+	chmod +x ${ARIA_CONFIG_DIR}/autoupload.sh
+	chmod 777 ${ARIA_CONFIG_DIR}/aria2.session
+	chmod +x ${ARIA_CONFIG_DIR}/aria2
+	mv -f ${ARIA_CONFIG_DIR}/aria2 /etc/init.d
 	update-rc.d -f aria2 defaults
 	
 	echo -e "${Info_font_prefix}[信息]${Font_suffix} $SOFT_NAME 安装结束。"
@@ -112,7 +113,7 @@ startup(){
 	echo -e "${Info_font_prefix}[信息]${Font_suffix} 选择VIM编辑后输入:wq保存 ${Font}"
 	crontab -e
 	bash /etc/init.d/caddy restart
-	bash ${ARIA2_DIR}/trackers-list-aria2.sh
+	bash ${ARIA_CONFIG_DIR}/trackers-list-aria2.sh
 }
 main(){
 	check_system
