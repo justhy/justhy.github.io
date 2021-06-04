@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 # 0 0 * * 1 /root/script/clear.sh
 
 deleteLogs(){
@@ -10,6 +10,7 @@ deleteLogs(){
 }
 
 deleteTorrents(){
+	rm -f /root/.config/*.zip
 	workdir="/root/.config"
 	cd "$workdir"
 	for i in `find . -name "*.torrent"`; do rm -rf $i; done
