@@ -4,7 +4,7 @@ fileName=""
 moved=true
 #moved=false
 
-downDir="/root/.qBittorrent/Download"
+downDir="/root/Download"
 
 file="${downDir}"
 

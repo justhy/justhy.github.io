@@ -11,7 +11,7 @@ transfers=16
 cloudName=moe
 cloudFolder=.qBittorrent
 
-if [[ -n "$category" ]]; then 
+if [ -n "$category" ]; then
 	if [[ "$SHTZWZM" =~ "$category" ]];then
 		cloudName=shtzwzm
 		cloudFolder=RSSHub
@@ -22,10 +22,4 @@ if [ -d "${file}" ];then
 	${software} copy --transfers=$transfers "$1" ${cloudName}:${cloudFolder}/"$2"/
 elif [ -f "${file}" ]; then
 	${software} copy "$1" ${cloudName}:${cloudFolder}/ 
-fi
-
-if [[ -n "$category" ]]; then 
-	if [[ "$SHTZWZM" =~ "$category" ]];then
-		fclone --max-size 300M delete $cloudName:RSSHub
-	fi
 fi
