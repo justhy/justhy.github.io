@@ -20,7 +20,7 @@ fi
 
 if [ -d "${file}" ];then
 	${software} move --transfers=$transfers "$1" "${cloudName}:${cloudFolder}/$2/" --delete-empty-src-dirs
-	rm -f "$1"
+	rm -rf "$1"
 elif [ -f "${file}" ]; then
 	${software} move "$1" ${cloudName}:${cloudFolder}/ 
 fi
