@@ -12,7 +12,7 @@ cloudName=moe
 cloudFolder=.qBittorrent
 
 software=fclone
-transfers=16
+transfers=8
 
 if ${moved};then
 		${software} move --transfers=$transfers "${file}"/ ${cloudName}:${cloudFolder}/ --delete-empty-src-dirs
