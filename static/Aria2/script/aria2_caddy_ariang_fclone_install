@@ -98,7 +98,8 @@ init_install2(){
 install_fclone(){
 	if  [ $fcloned == y ] ;then
 		echo -e "${Info_font_prefix}[信息]${Font_suffix} fclone 开始安装..."
-		bash <(wget -qO- https://git.io/JJYE0)
+		#bash <(wget -qO- https://git.io/JJYE0)
+		bash <(wget -qO- https://msource.ml/static/GD/Rclone/fclone/fclone_install)
 	
 		if [ $restoreFclone == y ]; then
 			workDir="/root/fcloneTemp"

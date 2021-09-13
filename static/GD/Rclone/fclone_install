@@ -25,7 +25,7 @@ check_system(){
 	#fi
 }
 
-do_install(){
+install(){
 	check_system
 	echo -e "${Info_font_prefix}[信息]${Font_suffix} ${SOFT_NAME} 开始安装..."
 	cd ~
@@ -51,10 +51,11 @@ do_install(){
 	unzip -q "$DOWNLOAD_FILE"
 	rm -f "$DOWNLOAD_FILE"
 	chmod +x fclone
-	mv -f ./fclone /usr/bin
+	mv -f ./fclone "$FCLONE_FILE"
 	fclone -V
 }
 
 main(){
-	do_install
+	install
 }
+main
