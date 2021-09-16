@@ -26,7 +26,7 @@ check_system(){
 }
 
 install(){
-	check_system
+	#check_system
 	echo -e "${Info_font_prefix}[信息]${Font_suffix} ${SOFT_NAME} 开始安装..."
 	cd ~
 	if [[ -e ${FCLONE_FILE} ]]; then
