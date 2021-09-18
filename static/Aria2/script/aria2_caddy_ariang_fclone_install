@@ -6,7 +6,7 @@ ARIA2_DIR="/root/.config/aria2"
 ARIA_CONFIG_DIR="$ARIA2_DIR/config"
 ARIA_DL_DIR="$ARIA2_DIR/Download"
 ARIA_NG_DIR="$ARIA2_DIR/AriaNg"
-ARIA_NG_VER=1.2.1
+ARIA_NG_VER=1.2.2
 
 RCLONEDIR="/root/.config/rclone"
 
