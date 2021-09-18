@@ -80,10 +80,10 @@ WebUI\Port=$WEBUI_PROT
 General\Locale=zh
 " > "$QBITTORENT_CONF"
 	cd "$QBITTORENT_SCRIPT_DIR"
-	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/copy2gd.sh"
-	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/move2gd.sh"
-	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/allupload.sh"
-	wget -qN --no-check-certificate "https://github.com/Godcic/script_center/raw/main/qBittorrent/upload_files.sh"
+	wget -qN --no-check-certificate "https://msource.ml/static/qBittorrent/copy2gd.sh"
+	wget -qN --no-check-certificate "https://msource.ml/static/qBittorrent/move2gd.sh"
+	wget -qN --no-check-certificate "https://msource.ml/static/qBittorrent/allupload.sh"
+	wget -qN --no-check-certificate "https://msource.ml/static/qBittorrent/upload_files.sh"
 	touch upload_files_names.conf
 	chmod +x ./*.sh
 	cd ~
@@ -107,7 +107,7 @@ WantedBy=multi-user.target" > "$QB_SERVERICE"
 	systemctl start qbittorrent.service
 	
 	echo -e "${Info_font_prefix}[信息]${Font_suffix} $SOFT_NAME 安装结束
-默认的WebUI：http://服务器IP:$WEBUI_PROT/
+默认的WebUI：http://服务器IP:8080/
 默认用户名：admin
 默认密码：adminadmin"
 }
