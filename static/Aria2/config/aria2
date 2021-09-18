@@ -66,7 +66,7 @@ do_start(){
 	if [[ $? -eq 0 ]]; then
 		echo -e "${Info} $NAME (PID ${PID}) 正在运行..." && exit 0
 	else
-		sudo /usr/bin/aria2c "${CONFIG}" > "${LOG}" -D
+		sudo /usr/bin/aria2c --conf-path="${CONFIG}" > "${LOG}" -D
 		sleep 2s
 		check_running
 		if [[ $? -eq 0 ]]; then
