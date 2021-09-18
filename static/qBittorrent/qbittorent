@@ -27,16 +27,16 @@ check_system(){
 	OSARCH=$(uname -m)
 	case $OSARCH in 
 		x86_64)
-			BINTAG=amd64
+			BINTAG=x86_64
 			;;
-		i*86)
-			BINTAG=386
-			;;
-		arm64)
-			BINTAG=arm64
+		#i*86)
+		#	BINTAG=386
+		#	;;
+		arm64 || aarch64)
+			BINTAG=aarch64
 			;;
 		arm*)
-			BINTAG=arm
+			BINTAG=armhf
 			;;
 		*)
 			echo "unsupported OSARCH: $OSARCH"
@@ -57,7 +57,7 @@ check_running(){
 get_latest_release(){
 	check_system
 	wget -qO- https://api.github.com/repos/userdocs/qbittorrent-nox-static/releases/latest \
-	| grep browser_download_url | grep "$BINTAG-musl-qbittorrent-nox" | cut -d '"' -f 4 \
+	| grep browser_download_url | grep "$BINTAG-qbittorrent-nox" | cut -d '"' -f 4 \
 	| wget --no-verbose -i- -qO "$NAME_BIN"
 	[[ ! -e "$NAME_BIN" ]] && echo -e "${Error_font_prefix}[信息]${Font_suffix} ${SOFT_NAME} 下载失败 !" && exit 1
 	rm -f "$QBITTORENT_FILE"
