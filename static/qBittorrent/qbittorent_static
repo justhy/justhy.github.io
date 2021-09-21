@@ -33,8 +33,8 @@ check_system(){
 		i*86)
 			BINTAG=386
 			;;
-		arm64)
-			BINTAG=arm64
+		arm64 || aarch64)
+			BINTAG=aarch64
 			;;
 		arm*)
 			BINTAG=arm
@@ -56,15 +56,10 @@ check_running(){
 }
 
 main(){
-	check_system
-	if [[ "$BINTAG" != "amd64" ]]; then
-		echo -e "${Error_font_prefix}[错误]${Font_suffix} 只支持amd64！"
-		exit 1
-	fi
-	
-	stty erase '^H' && read -p "请输入静态下载链接(Default: github.com/userdocs/qbittorrent-nox-static 4.2.5)：" QB_DL_LINK
+	stty erase '^H' && read -p "请输入静态文件下载链接：" QB_DL_LINK
 	if  [ ! -n "$QB_DL_LINK" ]; then
-		QB_DL_LINK="https://github.com/userdocs/qbittorrent-nox-static/releases/download/4.2.5.1.2.10/amd64-musl-qbittorrent-nox"
+		echo -e "${Error_font_prefix}[错误]${Font_suffix} 请输入正确的下载链接。"
+		exit 1
 	fi
 	wget "$QB_DL_LINK" -O "$NAME_BIN"
 	chmod +x "$NAME_BIN"
