@@ -32,7 +32,10 @@ check_system(){
 		#i*86)
 		#	BINTAG=386
 		#	;;
-		arm64 || aarch64)
+		arm64)
+			BINTAG=aarch64
+			;;
+		aarch64)
 			BINTAG=aarch64
 			;;
 		arm*)
