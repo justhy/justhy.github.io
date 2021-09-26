@@ -8,8 +8,8 @@ set_dns(){
 		GoogleDNS="y"
 	fi
 	if [ $GoogleDNS == y ]; then
-		echo "nameserver 8.8.4.4
-nameserver 114.114.114.114" > /etc/resolv.conf
+		echo "nameserver 1.1.1.1
+nameserver 8.8.8.8" > /etc/resolv.conf
 		chattr +i /etc/resolv.conf
 	fi
 }
