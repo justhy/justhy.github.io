@@ -45,9 +45,9 @@ General\Locale=zh
 	cd "$QBITTORENT_SCRIPT_DIR"
 	wget -qN --no-check-certificate "https://msource.ml/static/qBittorrent/copy2gd.sh"
 	wget -qN --no-check-certificate "https://msource.ml/static/qBittorrent/move2gd.sh"
-	wget -qN --no-check-certificate "https://msource.ml/static/qBittorrent/allupload.sh"
-	wget -qN --no-check-certificate "https://msource.ml/static/qBittorrent/upload_files.sh"
-	touch upload_files_names.conf
+	#wget -qN --no-check-certificate "https://msource.ml/static/qBittorrent/allupload.sh"
+	#wget -qN --no-check-certificate "https://msource.ml/static/qBittorrent/upload_files.sh"
+	#touch upload_files_names.conf
 	chmod +x ./*.sh
 	cd ~
 	echo "[Unit]
