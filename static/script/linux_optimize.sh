@@ -98,7 +98,7 @@ install_def(){
 set_finished(){
 	sysctl -p
 	read -p "是否重启，以应用优化？（y/n, default: y）：" reooted
-	if [ $reooted == n ]; then
+	if [ -n "$reooted" ] && [ $reooted == n ]; then
 		echo -e "${Info_font_prefix}[信息]${Font_suffix} 优化结束。"
 	else
 		echo -e "${Info_font_prefix}[信息]${Font_suffix} 系统将会重启..."
