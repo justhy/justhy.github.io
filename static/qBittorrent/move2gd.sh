@@ -13,7 +13,7 @@ cloudFolder=.qBittorrent
 
 if [ -n "$category" ]; then
 	if [[ "$SHTZWZM" =~ "$category" ]];then
-		cloudName=shtzwzm
+		cloudName=sp-shtzwzmfp
 		cloudFolder=RSSHub
 	fi
 fi
