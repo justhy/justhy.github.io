@@ -22,6 +22,7 @@ if [ "$path" = "$downloadpath" ] && [ $2 -eq 1 ]
     ${software} move "$filepath" ${cloudName}:${cloudFolder}/
 	
 	${software} move "$cloudName:${cloudFolder}/${filepath##*/}" "${spCloudName}:${cloudFolder}/" --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
+	exit 0
 elif [ "$path" = "$downloadpath" ]
     then
 	while [[ "`ls -A "$filepath/"`" != "" ]]; do
@@ -30,8 +31,7 @@ elif [ "$path" = "$downloadpath" ]
 	rm -rf "$filepath/"
 	
 	${software} move ${cloudName}:${cloudFolder}/"${filepath##*/}"/ ${spCloudName}:${cloudFolder}/"${filepath##*/}"/ --transfers=$transfers --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
-	
 	${software} rmdir ${cloudName}:${cloudFolder}/"${filepath##*/}"/
+	exit 0
 fi
-exit 0
 done
