@@ -22,18 +22,22 @@ if [ -n "$category" ] && [[ "$SHTZWZM" =~ "$category" ]]; then
 fi
 
 if [ -d "${file}" ];then
-	${software} move --transfers=$transfers "$1" "$cloudName:${cloudFolder}/$2/" --delete-empty-src-dirs
+	${software} move "$1" "$cloudName:${cloudFolder}/$2/" --transfers=$transfers --delete-empty-src-dirs
 	rm -rf "$1"
 	
 	if $isShtzwzm; then
-		${software} move --transfers=$transfers "$cloudName:${cloudFolder}/$2/" "$spCloudName:/" --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
+		${software} move "$cloudName:${cloudFolder}/$2/" "$spCloudName:/" --transfers=$transfers --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
 	else
-		${software} move --transfers=$transfers "$cloudName:${cloudFolder}/$2/" "$spCloudName:${cloudFolder}/$2/" --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
+		${software} move "$cloudName:${cloudFolder}/$2/" "$spCloudName:${cloudFolder}/$2/" --transfers=$transfers --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
 	fi
 	${software} rmdirs "$cloudName:${cloudFolder}/$2/"
 elif [ -f "${file}" ]; then
 	${software} move "$1" "$cloudName:${cloudFolder}/"
 	
-	${software} move "$cloudName:${cloudFolder}/$2" "$spCloudName:${cloudFolder}/" --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
+	if $isShtzwzm; then
+		${software} move "$cloudName:${cloudFolder}/$2/" "$spCloudName:/" --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
+	else
+		${software} move "$cloudName:${cloudFolder}/$2" "$spCloudName:${cloudFolder}/" --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
+	fi
 fi
 
