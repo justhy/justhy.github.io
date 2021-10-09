@@ -27,7 +27,7 @@ if [ -d "${file}" ];then
 	
 	${software} move --transfers=$transfers "$cloudName:${cloudFolder}/$2/" "$spCloudName:${cloudFolder}/$2/" --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
 	
-	${software} rmdir "$cloudName:${cloudFolder}/$2/"
+	${software} rmdirs "$cloudName:${cloudFolder}/$2/"
 elif [ -f "${file}" ]; then
 	${software} move "$1" "$cloudName:${cloudFolder}/"
 	
