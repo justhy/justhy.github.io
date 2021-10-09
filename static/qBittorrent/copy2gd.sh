@@ -35,5 +35,5 @@ if [ -d "${file}" ];then
 elif [ -f "${file}" ]; then
 	${software} copy "$1" "${cloudName}:${cloudFolder}/"
 	
-	${software} move "${cloudName}:${cloudFolder}/$2" "$spCloudName:${cloudFolder}/" --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
+	${software} move "$cloudName:${cloudFolder}/$2" "$spCloudName:${cloudFolder}/" --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
 fi
