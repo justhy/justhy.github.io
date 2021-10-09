@@ -14,20 +14,18 @@ cloudFolder=qBittorrent
 isShtzwzm=false
 spCloudName=sp-download
 
-if [ -n "$category" ]; then
-	if [[ "$SHTZWZM" =~ "$category" ]];then
+if [ -n "$category" ] && [[ "$SHTZWZM" =~ "$category" ]]; then
 		isShtzwzm=true
 		spCloudName=sp-shtzwzmfp
-		cloudFolder=""
+		cloudFolder=RSSHub
 		fclone --max-size 100M delete "$1"
-	fi
 fi
 
 if [ -d "${file}" ];then
 	${software} copy --transfers=$transfers "$1" "${cloudName}:${cloudFolder}/$2/"
 	
 	if $isShtzwzm; then
-		${software} move --transfers=$transfers "$cloudName:${cloudFolder}/$2/" "$spCloudName:${cloudFolder}/" --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
+		${software} move --transfers=$transfers "$cloudName:${cloudFolder}/$2/" "$spCloudName:/" --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
 	else
 		${software} move --transfers=$transfers "$cloudName:${cloudFolder}/$2/" "$spCloudName:${cloudFolder}/$2/" --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
 	fi
