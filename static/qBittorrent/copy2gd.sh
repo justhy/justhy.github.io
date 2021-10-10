@@ -25,7 +25,7 @@ if [ -d "${file}" ];then
 	${software} copy "$1" "${cloudName}:${cloudFolder}/$2/" --transfers=$transfers
 	
 	if $isShtzwzm; then
-		${software} move "$cloudName:${cloudFolder}/$2/" "$spCloudName:/" --transfers=$transfers --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
+		${software} move "$cloudName:${cloudFolder}/$2/" "$spCloudName:${cloudFolder}/" --transfers=$transfers --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
 	else
 		${software} move "$cloudName:${cloudFolder}/$2/" "$spCloudName:${cloudFolder}/$2/" --transfers=$transfers --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
 	fi
