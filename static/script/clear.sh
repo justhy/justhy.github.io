@@ -2,7 +2,7 @@
 # 0 0 * * 1 /root/script/clear.sh
 
 deleteLogs(){
-	#rm -rf /tmp/*
+	#find /tmp -type f -mmin -300 -delete;
 	workdir="/"
 	cd "$workdir"
 	#for i in `find . -name "*.log"`; do cat /dev/null > $i; done
