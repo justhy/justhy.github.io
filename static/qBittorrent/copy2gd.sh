@@ -22,20 +22,24 @@ if [ -n "$category" ] && [[ "$SHTZWZM" =~ "$category" ]]; then
 fi
 
 if [ -d "${file}" ];then
-	${software} copy "$1" "${cloudName}:${cloudFolder}/$2/" --transfers=$transfers
+	${software} copy --transfers=$transfers "$1" "${cloudName}:${cloudFolder}/$2/"
 	
 	if $isShtzwzm; then
-		${software} move "$cloudName:${cloudFolder}/$2/" "$spCloudName:${cloudFolder}/" --transfers=$transfers --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
+		${software} copy --transfers=$transfers "$cloudName:${cloudFolder}/$2/" "$spCloudName:${cloudFolder}/" --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
 	else
-		${software} move "$cloudName:${cloudFolder}/$2/" "$spCloudName:${cloudFolder}/$2/" --transfers=$transfers --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
+		# GD还没完蛋之前使用 copy ，复制完成后移动到 $cloudName:moved
+		${software} move --transfers=$transfers "$cloudName:${cloudFolder}/$2/" "$spCloudName:${cloudFolder}/$2/" --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
+		#${software} move --transfers=$transfers "$cloudName:${cloudFolder}/$2/" "$cloudName:moved/$2/" 
 	fi
 	${software} rmdirs "$cloudName:${cloudFolder}/$2/"
 elif [ -f "${file}" ]; then
 	${software} copy "$1" "${cloudName}:${cloudFolder}/"
 	
 	if $isShtzwzm; then
-		${software} move "$cloudName:${cloudFolder}/$2/" "$spCloudName:${cloudFolder}/" --delete-empty-src-dirs --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
+		${software} move "$cloudName:${cloudFolder}/$2" "$spCloudName:/" --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
 	else
+		# GD还没完蛋之前使用 copy ，复制完成后移动到 $cloudName:moved
 		${software} move "$cloudName:${cloudFolder}/$2" "$spCloudName:${cloudFolder}/" --onedrive-no-versions --ignore-checksum --ignore-size --ignore-errors --drive-acknowledge-abuse
+		#${software} move "$cloudName:${cloudFolder}/$2" "$cloudName:moved/" 
 	fi
 fi
