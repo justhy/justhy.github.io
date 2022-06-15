@@ -8,7 +8,7 @@ cloudName=moe
 cloudFolder=Aria2
 
 spCloudName=sp-download
-transfers=8
+transfers=2
 
 if [ $2 -eq 0 ]
         then
