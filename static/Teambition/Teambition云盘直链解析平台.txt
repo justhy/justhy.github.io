@@ -1,0 +1,25 @@
+
+https://www.52pojie.cn/thread-1320716-1-1.html
+
+# 安装
+wget https://one.blob.core.chinacloudapi.cn/badyun/teambition/v0.01/app
+chmod +x ./app
+./app
+
+# 进程守护可以使用nohup或者pm2
+# nohup方式命令为：
+nohup ./app &
+
+# PM2
+pm2 start app --name teambition
+pm2 save
+pm2 startup
+
+# 关闭程序
+#获取pid
+sudo lsof -i:5213
+#结束进程
+sudo kill -9 你上面查到的pid
+
+# win服务器直接下载如下链接运行即可
+https://one.blob.core.chinacloudapi.cn/badyun/teambition/v0.01/app.exe

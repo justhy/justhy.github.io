@@ -1,0 +1,77 @@
+#! /bin/bash
+# https://github.com/userdocs/qbittorrent-nox-static/releases
+
+SOFT_NAME="qBittorrent"
+NAME_BIN="qbittorrent-nox"
+BIN_DIR="/usr/local/bin/"
+QBITTORENT_FILE="$BIN_DIR$NAME_BIN"
+QBITTORENT_DIR="/root/.config/qBittorrent"
+QBITTORENT_CONF="$QBITTORENT_DIR/qBittorrent.conf"
+WEBUI_PROT=2020
+QBITTORENT_SCRIPT_DIR="$QBITTORENT_DIR/script"
+QBITTORENT_DL_DIR="/root/Download"
+QB_SERVERICE="/etc/systemd/system/qbittorrent.service"
+
+Info_font_prefix="\033[32m" && Error_font_prefix="\033[31m" && Info_background_prefix="\033[42;37m" && Error_background_prefix="\033[41;37m" && Font_suffix="\033[0m"
+
+check_running(){
+	PID=`ps -ef |grep "${NAME_BIN}" |grep -v "grep" |grep -v "init.d" |grep -v "service" |awk '{print $2}'`
+	if [[ ! -z ${PID} ]]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+main(){
+	stty erase '^H' && read -p "请输入静态文件下载链接：" QB_DL_LINK
+	if  [ ! -n "$QB_DL_LINK" ]; then
+		echo -e "${Error_font_prefix}[错误]${Font_suffix} 请输入正确的下载链接。"
+		exit 1
+	fi
+	wget "$QB_DL_LINK" -O "$NAME_BIN"
+	chmod +x "$NAME_BIN"
+	mv -f "$NAME_BIN" "$BIN_DIR"
+	mkdir -p "$QBITTORENT_DIR"
+	mkdir -p "$QBITTORENT_SCRIPT_DIR"
+	mkdir -p "$QBITTORENT_DL_DIR"
+	echo "[LegalNotice]
+Accepted=true
+
+[Preferences]
+WebUI\Port=$WEBUI_PROT
+General\Locale=zh
+" > "$QBITTORENT_CONF"
+	cd "$QBITTORENT_SCRIPT_DIR"
+	wget -qN --no-check-certificate "https://msource.ml/static/qBittorrent/copy2gd.sh"
+	wget -qN --no-check-certificate "https://msource.ml/static/qBittorrent/move2gd.sh"
+	#wget -qN --no-check-certificate "https://msource.ml/static/qBittorrent/allupload.sh"
+	#wget -qN --no-check-certificate "https://msource.ml/static/qBittorrent/upload_files.sh"
+	#touch upload_files_names.conf
+	chmod +x ./*.sh
+	cd ~
+	echo "[Unit]
+Description=qBittorrent Daemon Service
+After=network.target
+ 
+[Service]
+Type=forking
+ExecStart=$QBITTORENT_FILE -d
+ExecStop=/usr/bin/killall -w -s 9 $QBITTORENT_FILE
+TimeoutSec=300
+Restart=always
+RestartSec=10
+ 
+[Install]
+WantedBy=multi-user.target" > "$QB_SERVERICE"
+	
+	systemctl daemon-reload
+	systemctl enable qbittorrent.service
+	systemctl start qbittorrent.service
+	
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $SOFT_NAME 安装结束
+默认的WebUI：http://服务器IP:8080/
+默认用户名：admin
+默认密码：adminadmin"
+}
+main

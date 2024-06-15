@@ -1,0 +1,117 @@
+#! /bin/bash
+
+THIS_NAME="AutoRclone"
+AUTORCLONE_DIR="$( cd "$( dirname "$0"  )" && pwd  )"
+SA_PREFIX="godeicsa"
+PYTHON3_VER=3.8.5
+SOFTWARE=fclone
+REMOTE=gd
+Info_font_prefix="\033[32m" && Error_font_prefix="\033[31m" && Info_background_prefix="\033[42;37m" && Error_background_prefix="\033[41;37m" && Font_suffix="\033[0m"
+
+source /etc/os-release &>/dev/null
+check_sys(){
+	if [[ "${ID}" == "debian" && ${VERSION_ID} -ge 8 ]];then
+		VER_ID=${VERSION_ID}
+	else
+		echo -e "${Error_font_prefix}[错误]${Font_suffix} 只支持Debian8及以上版本"
+		exit 1
+	fi
+}
+compilePython(){
+	wget https://www.python.org/ftp/python/${PYTHON3_VER}/Python-${PYTHON3_VER}.tgz && tar -xf Python-*.tgz && rm -rf Python-*.tgz && cd Python-*
+	./configure --enable-optimizations
+	make -j$(nproc) && make install
+	python3 -V
+	pip3 -V
+}
+compilePython3(){
+	check_sys
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} 将要编译Python${PYTHON3_VER}..."
+	if [ $VER_ID -eq 8 ]; then
+		echo "deb http://deb.debian.org/debian stretch main" >> /etc/apt/sources.list
+		apt-get update
+		apt install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev
+		sed -i '$d' /etc/apt/sources.list
+		apt-get update
+		compilePython
+	elif [ $VER_ID -gt 8 ]; then
+		apt update 
+		apt install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev
+		compilePython
+	else
+		echo -e "${Error_font_prefix}[错误]${Font_suffix} 只支持Debian8及以上版本"
+		exit 1
+	fi
+
+}
+do_install() {
+	read -p "是否编译安装Python${PYTHON3_VER}（y/n）：" compilePython3
+	read -p "如有credentials.json下载链接请输入（.json）：" jsonPath
+	cd ~
+	if [ $compilePython3 == y ]; then
+		compilePython3
+	fi
+	apt install -y git
+	git clone https://github.com/xyou365/AutoRclone && cd AutoRclone && pip3 install -r requirements.txt
+	if  [[ $jsonPath =~ \.json$ ]]; then
+		wget --no-check-certificate -q "${jsonPath}" -O credentials.json
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 安装结束。"
+	else
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 安装结束，请自行上传credentials.json。"
+	fi
+}
+do_backup(){
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 正在备份..."
+	cd ~
+	date=$(date "+%Y%m%d%H%M%S")
+	suffix="-${date}"
+	
+	RemoteFolder="GDCopy/AutoRclone/"
+	fileName="AutoRclone${suffix}.zip"
+	file="/root/${fileName}"
+	zip -q -r $fileName ./AutoRclone/
+	$SOFTWARE move $file $REMOTE:$RemoteFolder
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 备份完成：$REMOTE:$RemoteFolder$fileName "
+}
+do_restore(){
+	read -p "请输入备份包链接（.zip）：" restorePath
+	read -p "是否编译安装Python${PYTHON3_VER}（y/n）：" compilePython3
+	cd ~
+	if  [[ $restorePath =~ \.zip$ ]];then
+		if [ $compilePython3 == y ]; then
+			compilePython3
+		fi
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 正在还原..."
+		cd ~
+		wget --no-check-certificate -c -q $restorePath -O $THIS_NAME.zip
+		unzip -o -q $THIS_NAME.zip && rm -rf $THIS_NAME.zip
+		cd AutoRclone && pip3 install -r requirements.txt
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 还原完成。"
+	else
+		echo -e "${Error_font_prefix}[错误]${Font_suffix}请检查输入 !"
+	fi
+}
+do_dlsa(){
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} 根据指定的项目ID下载所属SA，格式用英文逗号隔开 -> projectId1,projectId2,projectId3"
+	read -p "请输入要下载的项目ID：" projectIds
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} 正在下载SA..."
+	IFS=","
+	array=($projectIds)
+	cd $AUTORCLONE_DIR
+	for pjid in ${array[@]}; do
+		python3 test2.1.py --enable-services ${pjid}
+		python3 test2.1.py --create-sas ${pjid} --sa-prefix $SA_PREFIX
+		python3 test2.1.py --download-keys ${pjid} --email-name 3
+	done
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} 下载结束。"
+}
+case "$1" in
+	install|backup|restore|dlsa)
+	do_$1
+	;;
+	*)
+	echo "使用方法: $0 { install | backup | restore | dlsa }"
+	RETVAL=1
+	;;
+esac
+exit $RETVAL

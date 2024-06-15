@@ -1,0 +1,51 @@
+
+find . -name "*.json" | wc -l
+
+python3 test2.1.py --list-projects
+python3 test2.1.py --delete-allsa
+python3 test2.1.py --delete-sas myproject-283018
+
+# 每个项目10SA
+python3 test2.1.py --new-only --quick-setup 10 --sa-quantity 10 --project-prefix xx520vippj --sa-prefix xx520vipsa -n 1 -x 1 --email-name 3
+
+python3 test2.1.py --new-only --quick-setup 1 --sa-quantity 10 -n 1
+
+
+# 每个项目100SA  项目前缀 godeicpj godeicsa
+python3 test2.1.py --new-only --quick-setup 1 --project-prefix godeicpj --sa-prefix godeicsa -n 1 -x 1 --email-name 3
+
+python3 test2.1.py --enable-services quickstart-20200-1594779487619
+python3 test2.1.py --create-sas quickstart-20200-1594779487619
+python3 test2.1.py --download-keys quickstart-20200-1594779487619 --email-name 3
+
+# 创建400个项目
+python3 test2.1.py  --create-projects 400 --project-prefix godeicpj --sa-prefix godeicsa -n 421
+
+# 下载SA未满时，提取邮箱，移动
+rm -rf accounts/imgrampj792-*.json && python3 test2.1.py --delete-sas imgrampj792
+python3 test2.1.py --new-only --quick-setup 9 --sa-quantity 10 --project-prefix imgrampj --sa-prefix imgramsa -n 792 --email-name 3
+cd accounts/ && find . -name "*.json" | wc -l
+cd .. && python3 SA_Email_Finder.py imgrampj791-imgrampj800
+mv accounts/*.json tempAccounts/
+
+mv accounts/*.json existAccounts/
+mv tempAccounts/*.json existAccounts/
+
+# 创建100个项目
+bash sa-email-finder.sh
+mv tempAccounts/*.json existAccounts/
+bash backupsa.sh
+zip -r -q email.zip email/
+下载email.zip
+rm -rf email/* && rm -rf existAccounts/* && rm -rf email.zip
+# 更新saW
+vim backupsa.sh
+
+rm -rf ./credentials.json && rm -rf accounts/* && rm -rf tempAccounts/* && rm -rf existAccounts/* && rm -rf email/* && rm -rf ./token.pickle
+
+
+unzip SA-*.zip -d existAccounts/
+
+Brandy Fox
+Gabe Welch
+我的项目不够了，能不能给我增加点项目，谢谢。

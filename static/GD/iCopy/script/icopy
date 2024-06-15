@@ -1,0 +1,176 @@
+#! /bin/bash
+
+THIS_NAME="iCopy"
+ICOPY_DIR="/root/iCopy/"
+PYTHON3_VER=3.8.5
+Info_font_prefix="\033[32m" && Error_font_prefix="\033[31m" && Info_background_prefix="\033[42;37m" && Error_background_prefix="\033[41;37m" && Font_suffix="\033[0m"
+RETVAL=0
+
+source /etc/os-release &>/dev/null
+check_sys(){
+	if [[ "${ID}" == "debian" && ${VERSION_ID} -ge 8 ]];then
+		VER_ID=${VERSION_ID}
+	else
+		echo -e "${Error_font_prefix}[错误]${Font_suffix} 只支持Debian8及以上版本"
+		exit 1
+	fi
+}
+check_running(){
+	PID=`ps -ef |grep "${THIS_NAME}" |grep -v "grep" |grep -v "init.d" |grep -v "service" |awk '{print $2}'`
+	if [[ ! -z ${PID} ]]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+do_start(){
+	check_running
+	if [[ $? -eq 0 ]]; then
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 正在运行..." && exit 0
+	else
+		cd ${ICOPY_DIR}
+		screen -dmS iCopy `which python3` iCopy.py
+		sleep 3s
+		check_running
+		if [[ $? -eq 0 ]]; then
+			echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 启动成功 !"
+		else
+			echo -e "${Error_font_prefix}[错误]${Font_suffix} $THIS_NAME 启动失败 !"
+		fi
+	fi
+}
+do_stop(){
+	check_running
+	if [[ $? -eq 0 ]]; then
+		for pid in ${PID}
+		do
+			kill -9 ${pid}
+		done
+		RETVAL=$?
+		if [[ $RETVAL -eq 0 ]]; then
+			echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 停止成功。"
+		else
+			echo -e "${Error_font_prefix}[错误]${Font_suffix}$THIS_NAME 停止失败。"
+		fi
+	else
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 未运行 !"
+		RETVAL=1
+	fi
+}
+do_status(){
+	check_running
+	if [[ $? -eq 0 ]]; then
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 正在运行..."
+	else
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 未运行 !"
+		RETVAL=1
+	fi
+}
+do_restart(){
+	do_stop
+	do_start
+}
+do_update(){
+	do_stop
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 正在更新..."
+	cd ${ICOPY_DIR}
+	git pull
+	pip3 install -r requirements.txt
+	do_start
+}
+do_clear(){
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 正在清理日志..."
+	cd /
+	for i in `find . -name "*.log"`; do cat /dev/null >$i; done
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} 日志清理完成"
+}
+do_backup(){
+	read -p "请输入Bot名称：" botName
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 正在备份..."
+	if  [ ! -n "$botName" ] ;then
+		botName="未命名"
+	fi
+	date=$(date "+%Y%m%d%H%M%S")
+	suffix="-${botName}-${date}"
+	workDir="$(cd `dirname $0`; pwd)/iCopyTemp/"
+	rcloneCopyDir="${workDir}.config/"
+	
+	software=fclone
+	remote=gd
+	remoteFolder="GDCopy/iCopy/"
+	iCopyFileName="iCopy${suffix}.zip"
+	iCopyFile="${workDir}${iCopyFileName}"
+	
+	mkdir -p "$workDir"
+	mkdir -p "$rcloneCopyDir"
+	cp -r -p $ICOPY_DIR $workDir
+	cp -r -p /root/.config/rclone $rcloneCopyDir
+	cd $workDir
+	zip -q -r ${iCopyFileName} ./
+	$software move $iCopyFile $remote:$remoteFolder
+	rm -rf $workDir
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 备份完成：$remote:$remoteFolder$iCopyFileName "
+}
+compilePython(){
+	wget https://www.python.org/ftp/python/${PYTHON3_VER}/Python-${PYTHON3_VER}.tgz && tar -xf Python-*.tgz && rm -rf Python-*.tgz && cd Python-*
+	./configure --enable-optimizations
+	make -j$(nproc) && make install
+	cd ~
+	rm -rf Python-*
+}
+compilePython3(){
+	check_sys
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} 将要编译安装Python${PYTHON3_VER}..."
+	if [ $VER_ID -eq 8 ]; then
+		echo "deb http://deb.debian.org/debian stretch main" >> /etc/apt/sources.list
+		apt-get update
+		apt install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev
+		sed -i '$d' /etc/apt/sources.list
+		apt-get update
+		compilePython
+	elif [ $VER_ID -gt 8 ]; then
+		apt update 
+		apt install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev
+		compilePython
+	else
+		echo -e "${Error_font_prefix}[错误]${Font_suffix} 只支持Debian8及以上版本"
+		exit 1
+	fi
+
+}
+do_restore(){
+	read -p "请输入备份包链接（.zip）：" restorePath
+	read -p "是否编译安装Python${PYTHON3_VER}（y/n）：" compilePython3
+	if  [[ $restorePath =~ \.zip$ ]] ;then
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 正在还原..."
+		apt install -y git zip unzip curl screen
+		if [ $compilePython3 == y ]; then
+			compilePython3
+		fi
+		cd ~
+		bash <(wget -qO- https://git.io/JJYE0)
+		wget --no-check-certificate -c -q $restorePath -O $THIS_NAME.zip
+		unzip -q -o $THIS_NAME.zip && rm -rf $THIS_NAME.zip && cd iCopy
+		git pull
+		pip3 install -r requirements.txt
+		echo "0 0 * * 1 /root/script/icopy clear" >> /var/spool/cron/crontabs/root
+		echo -e "${Error_font_prefix}[信息]${Font_suffix} 选择VIM编辑后输入:wq保存 ${Font}"
+		crontab -e
+		python3 -V
+		pip3 -V
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} $THIS_NAME 还原完成。"
+	else
+		echo -e "${Error_font_prefix}[错误]${Font_suffix}请输入正确的备份包链接 !"
+	fi
+}
+case "$1" in
+	start|stop|restart|status|update|clear|backup|restore)
+	do_$1
+	;;
+	*)
+	echo "使用方法: $0 { start | stop | restart | status | update | clear | backup | restore}"
+	RETVAL=1
+	;;
+esac
+exit $RETVAL

@@ -1,0 +1,61 @@
+#! /bin/bash
+
+Info_font_prefix="\033[32m" && Error_font_prefix="\033[31m" && Info_background_prefix="\033[42;37m" && Error_background_prefix="\033[41;37m" && Font_suffix="\033[0m"
+
+SOFT_NAME="Fclone"
+FCLONE_FILE="/usr/bin/fclone"
+DOWNLOAD_FILE="fclone.zip"
+
+bit=`uname -m`
+source /etc/os-release &>/dev/null
+
+check_system(){
+	KernelBit="$(getconf LONG_BIT)"
+    if [[ "${ID}" == "debian" && ${VERSION_ID} -ge 8 ]];then
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} 当前系统为 Debian ${VERSION_ID} "
+    elif [[ "${ID}" == "ubuntu" && `echo "${VERSION_ID}" | cut -d '.' -f1` -ge 16 ]];then
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} 当前系统为 Ubuntu ${VERSION_ID} "
+    else
+		echo -e "${Error_font_prefix}[错误]${Font_suffix} 当前系统为不在支持的系统列表内，安装中断"
+        exit 1
+    fi
+	#if [ ${bit} != x86_64 ]; then
+	#	echo -e "${Error_font_prefix}[错误]${Font_suffix} 只支持x86_64"
+    #    exit 1
+	#fi
+}
+
+install(){
+	#check_system
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} ${SOFT_NAME} 开始安装..."
+	cd ~
+	if [[ -e ${FCLONE_FILE} ]]; then
+		echo && echo -e "${Error_font_prefix}[警告]${Font_suffix}  检测到 ${SOFT_NAME} 已安装，是否继续安装(覆盖更新)？[y/N]"
+		stty erase '^H' && read -p "(default: n):" yn
+		[[ -z ${yn} ]] && yn="n"
+		if [[ ${yn} == [Nn] ]]; then
+			echo && echo "已取消..." && exit 1
+		fi
+	fi
+
+	if [[ ${bit} == "x86_64" ]]; then
+		wget --no-check-certificate -O "$DOWNLOAD_FILE" "https://msource.ml/static/GD/Rclone/fclone/fclone-amd64.zip"
+	elif [[ ${bit} == "arm64" ]] || [[ ${bit} == "aarch64" ]]; then
+		wget --no-check-certificate -O "$DOWNLOAD_FILE" "https://msource.ml/static/GD/Rclone/fclone/fclone-arm64.zip"
+	else
+		echo -e "${Error_font_prefix}[错误]${Font_suffix}  不支持 ${bit} !" && exit 1
+	fi
+	
+	[[ ! -e "$DOWNLOAD_FILE" ]] && echo -e "${Error_font_prefix}[信息]${Font_suffix} ${SOFT_NAME} 下载失败 !" && exit 1
+	
+	unzip -q "$DOWNLOAD_FILE"
+	rm -f "$DOWNLOAD_FILE"
+	chmod +x fclone
+	mv -f ./fclone "$FCLONE_FILE"
+	fclone -V
+}
+
+main(){
+	install
+}
+main
