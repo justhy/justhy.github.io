@@ -8,7 +8,7 @@ downDir="/root/Download"
 
 file="${downDir}"
 
-cloudName=moe
+cloudName=download
 cloudFolder=.qBittorrent
 
 software=fclone

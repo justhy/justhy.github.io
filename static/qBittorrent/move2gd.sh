@@ -8,7 +8,7 @@ category="$3"
 software=fclone
 transfers=8
 
-cloudName=moe
+cloudName=download
 cloudFolder=qBittorrent
 
 isShtzwzm=false

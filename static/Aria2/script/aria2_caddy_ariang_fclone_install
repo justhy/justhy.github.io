@@ -99,7 +99,7 @@ install_fclone(){
 	if  [ $fcloned == y ] ;then
 		echo -e "${Info_font_prefix}[信息]${Font_suffix} fclone 开始安装..."
 		#bash <(wget -qO- https://git.io/JJYE0)
-		bash <(wget -qO- https://msource.ml/static/GD/Rclone/fclone_install)
+		bash <(wget -qO- https://justhy.github.io/static/GD/Rclone/fclone_install)
 	
 		if [ $restoreFclone == y ]; then
 			workDir="/root/fcloneTemp"
@@ -131,24 +131,24 @@ install_aria2(){
 	fi
 	
 	if [[ ${bit} == "i386" || ${bit} == "i686" ]]; then
-		wget --no-check-certificate -c "https://msource.ml/static/Aria2/aria2-static-builds/aria2-i386.tar.gz"
+		wget --no-check-certificate -c "https://justhy.github.io/static/Aria2/aria2-static-builds/aria2-i386.tar.gz"
 	elif [[ ${bit} == "x86_64" ]]; then
-		wget --no-check-certificate -c "https://msource.ml/static/Aria2/aria2-static-builds/aria2-x86_64.tar.gz"
+		wget --no-check-certificate -c "https://justhy.github.io/static/Aria2/aria2-static-builds/aria2-x86_64.tar.gz"
 	elif [[ ${bit} == "armv7l" ]]; then
-		wget --no-check-certificate -c "https://msource.ml/static/Aria2/aria2-static-builds/aria2-arm.tar.gz"
+		wget --no-check-certificate -c "https://justhy.github.io/static/Aria2/aria2-static-builds/aria2-arm.tar.gz"
 	elif [[ ${bit} == "arm64" ]] || [[ ${bit} == "aarch64" ]]; then
-		wget --no-check-certificate -c "https://msource.ml/static/Aria2/aria2-static-builds/aria2-arm64.tar.gz"
+		wget --no-check-certificate -c "https://justhy.github.io/static/Aria2/aria2-static-builds/aria2-arm64.tar.gz"
 	else
 		echo -e "${Error_font_prefix}[错误]${Font_suffix}  不支持 ${bit} !" && exit 1
 	fi
 	
 	tar zxvf aria2-*.tar.gz && rm -f aria2-*.tar.gz && mv -f aria2c /usr/bin/
 	cd ${ARIA_CONFIG_DIR}
-	wget --no-check-certificate "https://msource.ml/static/Aria2/config/aria2.conf"
-	wget --no-check-certificate "https://msource.ml/static/Aria2/config/aria2.session"
-	wget --no-check-certificate "https://msource.ml/static/Aria2/config/autoupload.sh"
-	wget --no-check-certificate "https://msource.ml/static/Aria2/config/trackers-list-aria2.sh"
-	wget --no-check-certificate "https://msource.ml/static/Aria2/config/aria2"
+	wget --no-check-certificate "https://justhy.github.io/static/Aria2/config/aria2.conf"
+	wget --no-check-certificate "https://justhy.github.io/static/Aria2/config/aria2.session"
+	wget --no-check-certificate "https://justhy.github.io/static/Aria2/config/autoupload.sh"
+	wget --no-check-certificate "https://justhy.github.io/static/Aria2/config/trackers-list-aria2.sh"
+	wget --no-check-certificate "https://justhy.github.io/static/Aria2/config/aria2"
 	chmod +x ${ARIA_CONFIG_DIR}/trackers-list-aria2.sh
 	chmod +x ${ARIA_CONFIG_DIR}/autoupload.sh
 	chmod 777 ${ARIA_CONFIG_DIR}/aria2.session
