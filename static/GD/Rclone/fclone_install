@@ -39,9 +39,9 @@ install(){
 	fi
 
 	if [[ ${bit} == "x86_64" ]]; then
-		wget --no-check-certificate -O "$DOWNLOAD_FILE" "https://msource.ml/static/GD/Rclone/fclone/fclone-amd64.zip"
+		wget --no-check-certificate -O "$DOWNLOAD_FILE" "https://justhy.github.io/static/GD/Rclone/fclone/fclone-amd64.zip"
 	elif [[ ${bit} == "arm64" ]] || [[ ${bit} == "aarch64" ]]; then
-		wget --no-check-certificate -O "$DOWNLOAD_FILE" "https://msource.ml/static/GD/Rclone/fclone/fclone-arm64.zip"
+		wget --no-check-certificate -O "$DOWNLOAD_FILE" "https://justhy.github.io/static/GD/Rclone/fclone/fclone-arm64.zip"
 	else
 		echo -e "${Error_font_prefix}[错误]${Font_suffix}  不支持 ${bit} !" && exit 1
 	fi
